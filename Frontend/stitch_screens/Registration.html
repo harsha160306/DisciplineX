@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Student Registration &amp; ID Card</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Serif:wght@400;500;600;700;800&amp;family=Public+Sans:wght@500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary-container": "#3366cc",
+                        "on-error-container": "#93000a",
+                        "on-primary-fixed-variant": "#00419d",
+                        "surface-container-low": "#f5f3f4",
+                        "surface-tint": "#2259bf",
+                        "surface-bright": "#faf9fa",
+                        "surface-variant": "#e3e2e3",
+                        "inverse-primary": "#b1c5ff",
+                        "primary-fixed": "#d9e2ff",
+                        "on-surface": "#1b1c1d",
+                        "tertiary-container": "#bfab49",
+                        "inverse-on-surface": "#f2f0f1",
+                        "on-tertiary-fixed": "#211b00",
+                        "surface-container-highest": "#e3e2e3",
+                        "on-error": "#ffffff",
+                        "on-background": "#1b1c1d",
+                        "secondary-container": "#dfe3e8",
+                        "tertiary": "#6d5e00",
+                        "background": "#faf9fa",
+                        "tertiary-fixed": "#f9e37a",
+                        "on-secondary": "#ffffff",
+                        "inverse-surface": "#303031",
+                        "outline": "#737784",
+                        "on-secondary-fixed-variant": "#42474b",
+                        "on-primary": "#ffffff",
+                        "primary": "#094cb2",
+                        "on-tertiary-container": "#4a3f00",
+                        "on-secondary-container": "#606569",
+                        "on-tertiary-fixed-variant": "#524600",
+                        "error-container": "#ffdad6",
+                        "secondary-fixed-dim": "#c2c7cc",
+                        "error": "#ba1a1a",
+                        "surface": "#faf9fa",
+                        "on-surface-variant": "#434653",
+                        "on-tertiary": "#ffffff",
+                        "surface-container": "#efedee",
+                        "on-primary-container": "#e7ebff",
+                        "outline-variant": "#c3c6d5",
+                        "primary-fixed-dim": "#b1c5ff",
+                        "on-primary-fixed": "#001946",
+                        "surface-dim": "#dbdadb",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-high": "#e9e8e9",
+                        "on-secondary-fixed": "#171c20",
+                        "tertiary-fixed-dim": "#dcc661",
+                        "secondary": "#5a5f63",
+                        "secondary-fixed": "#dfe3e8"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "fontFamily": {
+                        "headline": ["Noto Serif"],
+                        "display": ["Noto Serif"],
+                        "body": ["Inter"],
+                        "label": ["Public Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background font-body min-h-screen flex antialiased">
+<!-- Side Nav -->
+<nav class="hidden lg:flex flex-col gap-2 border-r border-outline-variant/15 bg-surface-container-lowest h-screen w-64 fixed left-0 top-0 pt-20">
+<div class="px-6 mb-8 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-display font-bold text-xl">
+                A
+            </div>
+<div>
+<h2 class="font-display font-semibold text-on-surface">Dr. Alexandria</h2>
+<p class="text-xs font-label text-on-surface-variant">Senior Faculty</p>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-label text-sm">Home</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+<span class="font-label text-sm">Scan</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-label text-sm">Search</span>
+</a>
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-xl px-4 py-3 mx-2 cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">how_to_reg</span>
+<span class="font-label text-sm font-semibold">Registration</span>
+</a>
+</div>
+<div class="p-4 border-t border-outline-variant/15">
+<button class="w-full py-3 bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-xl font-label font-semibold hover:shadow-sm transition-all duration-200">
+                Quick Scan
+            </button>
+</div>
+<div class="pb-6">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span class="font-label text-sm">Settings</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">help</span>
+<span class="font-label text-sm">Help</span>
+</a>
+</div>
+</nav>
+<!-- Main Content -->
+<main class="flex-1 lg:ml-64 relative min-h-screen">
+<!-- Top App Bar -->
+<header class="w-full sticky top-0 z-50 bg-surface-bright/80 backdrop-blur-xl border-b border-surface-container-low shadow-sm flex justify-between items-center px-8 h-16 max-w-full">
+<div class="flex items-center gap-6">
+<span class="font-display font-bold text-primary text-xl">MIC Attendance &amp; Remarks</span>
+<nav class="hidden md:flex gap-6 h-full items-end">
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label text-sm pb-5 pt-6 hover:bg-primary/5 px-2" href="#">Dashboard</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors font-label text-sm pb-5 pt-6 hover:bg-primary/5 px-2" href="#">Reports</a>
+</nav>
+</div>
+<button class="px-5 py-2 bg-primary text-on-primary rounded-lg font-label text-sm font-semibold hover:bg-primary-container transition-colors active:scale-95 duration-200">
+                Register
+            </button>
+</header>
+<div class="p-8 max-w-6xl mx-auto grid grid-cols-1 xl:grid-cols-12 gap-12">
+<!-- Registration Form Area -->
+<div class="xl:col-span-7 space-y-8">
+<div>
+<h1 class="font-headline text-4xl text-on-surface mb-3 tracking-tight">Student Enrollment</h1>
+<p class="text-on-surface-variant font-body leading-relaxed max-w-xl">
+                        Enter the student's details below to generate a new institutional identity card. Ensure all academic records align with the registrar's official roster.
+                    </p>
+</div>
+<form class="bg-surface-container-lowest p-8 rounded-xl shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-outline-variant/15 space-y-6">
+<!-- Photo Upload -->
+<div class="col-span-full">
+<label class="block font-label text-sm font-semibold text-on-surface mb-2">Student Portrait</label>
+<div class="mt-2 flex justify-center rounded-xl border border-dashed border-outline-variant/50 px-6 py-10 hover:bg-surface-container-low transition-colors group cursor-pointer bg-surface">
+<div class="text-center">
+<span class="material-symbols-outlined text-4xl text-outline mb-2 group-hover:text-primary transition-colors">add_a_photo</span>
+<div class="mt-4 flex text-sm leading-6 text-on-surface-variant justify-center">
+<span class="relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary-container">
+<span>Upload a file</span>
+<input class="sr-only" id="file-upload" name="file-upload" type="file"/>
+</span>
+<p class="pl-1">or drag and drop</p>
+</div>
+<p class="text-xs leading-5 text-on-surface-variant mt-1">PNG, JPG, GIF up to 10MB</p>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<!-- Student Name -->
+<div class="md:col-span-2">
+<label class="block font-label text-sm font-semibold text-on-surface mb-2" for="student-name">Full Legal Name</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow font-body" id="student-name" placeholder="e.g. Eleanor Vance" type="text"/>
+</div>
+<!-- Register Number -->
+<div>
+<label class="block font-label text-sm font-semibold text-on-surface mb-2" for="reg-number">Registration Number</label>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow font-body" id="reg-number" placeholder="e.g. MIC-2023-8921" type="text"/>
+</div>
+<!-- Academic Year -->
+<div>
+<label class="block font-label text-sm font-semibold text-on-surface mb-2" for="academic-year">Academic Year</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow font-body appearance-none" id="academic-year">
+<option>2023 - 2024</option>
+<option>2024 - 2025</option>
+<option>2025 - 2026</option>
+</select>
+</div>
+<!-- Department -->
+<div class="md:col-span-2">
+<label class="block font-label text-sm font-semibold text-on-surface mb-2" for="department">Department / Faculty</label>
+<select class="w-full bg-surface-container-lowest border border-outline-variant/50 rounded-lg px-4 py-3 text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-shadow font-body appearance-none" id="department">
+<option>Faculty of Computer Science</option>
+<option>Faculty of Arts &amp; Humanities</option>
+<option>School of Engineering</option>
+<option>Department of Biological Sciences</option>
+</select>
+</div>
+</div>
+<div class="pt-4 border-t border-outline-variant/15 mt-8">
+<button class="w-full py-4 bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-xl font-label text-lg font-bold shadow-sm hover:shadow-md hover:from-primary-container hover:to-primary transition-all duration-300" type="button">
+                            Generate Identity Card
+                        </button>
+</div>
+</form>
+</div>
+<!-- ID Card Preview Area -->
+<div class="xl:col-span-5 flex flex-col items-center xl:items-start pt-8 xl:pt-0">
+<div class="sticky top-24 w-full max-w-sm">
+<h3 class="font-headline text-xl text-on-surface mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-tertiary">badge</span>
+                        Card Preview
+                    </h3>
+<!-- The ID Card -->
+<div class="w-[340px] h-[540px] bg-surface-container-lowest rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.08)] border border-outline-variant/20 overflow-hidden relative flex flex-col">
+<!-- Card Header / Brand -->
+<div class="bg-primary px-6 py-5 flex items-center gap-4 relative overflow-hidden">
+<!-- abstract pattern overlay -->
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 16px 16px;"></div>
+<img alt="MIC College Logo" class="w-12 h-12 object-contain relative z-10 bg-white rounded p-1" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWw4yrRk8utVOzOsrHEalzBAZ-hjCxwV6uN9KNzC8Kv1mtRHvSzHo-n6r5v4lu0nvMsS_VomThq5HlYKQ4GjEYM0hvo-Q95b9rfBBJ-do7mihp11pUmxp48ewRX8ZKoky4R8u5poM14MhaJT9l1KHJQZM2FJVSiRSBJm-l74eyD-OojeB79xwdCig4D3pSSB19q80bo2gTk8zZFclKu3A7puNg1Y4klWwA_KBOSXuQiCjjFJtyuR0aoxNT0_ptagNESw18WVPdwqaC"/>
+<div class="relative z-10 text-white">
+<h4 class="font-display font-bold text-lg leading-tight tracking-wide">M.I.C.</h4>
+<p class="text-[10px] font-label uppercase tracking-widest text-primary-fixed opacity-90">Modern Institute College</p>
+</div>
+</div>
+<!-- Card Body -->
+<div class="flex-1 px-6 py-8 flex flex-col items-center bg-gradient-to-b from-surface-container-lowest to-surface">
+<!-- Student Photo Placeholder -->
+<div class="w-32 h-40 bg-surface-container-high rounded-xl mb-6 shadow-sm border-2 border-surface-container-lowest relative overflow-hidden flex items-center justify-center">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="A highly detailed, professional headshot portrait of a young adult university student, looking directly at the camera with a slight, confident smile. The lighting is soft, natural, and highly flattering, creating a bright, optimistic, academic aesthetic in light mode. The student is wearing neat, smart-casual attire. The background is a clean, neutral soft gray to ensure the face is the primary focus. High-end corporate photography style, incredibly sharp focus." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD8nE7lQ__eKGOHG50AG1Og_LclX0ZzxnF0AmBe1bkqsZDHwoDKMbHZpgKx4mNmkWbObtwg7Zzru77KpBQVxrxoaNnIqLCLgSPmoCyfR1NzV3R9_yuxMkaLgUXn-GDKkjCBW6b1PYYM3mAB3PqA3zLkiz9O_8bKKjqXkkWYnDCcdBkIWEqcXMxAHkqW0DkNNKVJdPcoV8clW_yXrlqV32Zq0TVCyvNxWTI-v1ZtMo8uqQ3y6dfRsT2Gh-o1CtxqVgffF8e7789TdMzU')"></div>
+<span class="material-symbols-outlined text-outline-variant text-4xl relative z-10">person</span>
+</div>
+<!-- Student Details -->
+<div class="text-center w-full space-y-4">
+<div>
+<h2 class="font-headline font-bold text-2xl text-on-surface">Eleanor Vance</h2>
+<p class="text-primary font-label text-sm font-semibold mt-1">Computer Science</p>
+</div>
+<div class="w-12 h-px bg-outline-variant/30 mx-auto"></div>
+<div class="grid grid-cols-2 gap-x-4 gap-y-2 text-left w-full px-2">
+<div class="text-[10px] font-label text-on-surface-variant uppercase tracking-wider">Reg No</div>
+<div class="text-sm font-body font-semibold text-on-surface text-right">MIC-24-8921</div>
+<div class="text-[10px] font-label text-on-surface-variant uppercase tracking-wider">Year</div>
+<div class="text-sm font-body font-semibold text-on-surface text-right">2024 - 2025</div>
+</div>
+</div>
+</div>
+<!-- Card Footer / Barcode -->
+<div class="bg-surface-container px-6 py-4 border-t border-outline-variant/20 flex flex-col items-center justify-center">
+<!-- Fake Barcode -->
+<div class="w-48 h-10 flex gap-0.5 items-end justify-between opacity-80">
+<div class="w-1 h-full bg-on-surface"></div>
+<div class="w-2 h-full bg-on-surface"></div>
+<div class="w-1 h-full bg-on-surface"></div>
+<div class="w-0.5 h-full bg-on-surface"></div>
+<div class="w-3 h-full bg-on-surface"></div>
+<div class="w-1 h-full bg-on-surface"></div>
+<div class="w-0.5 h-full bg-on-surface"></div>
+<div class="w-2 h-full bg-on-surface"></div>
+<div class="w-1 h-full bg-on-surface"></div>
+<div class="w-1.5 h-full bg-on-surface"></div>
+<div class="w-0.5 h-full bg-on-surface"></div>
+<div class="w-2 h-full bg-on-surface"></div>
+<div class="w-1 h-full bg-on-surface"></div>
+<div class="w-3 h-full bg-on-surface"></div>
+<div class="w-0.5 h-full bg-on-surface"></div>
+<div class="w-1 h-full bg-on-surface"></div>
+<div class="w-2 h-full bg-on-surface"></div>
+<div class="w-1 h-full bg-on-surface"></div>
+</div>
+<span class="font-body text-[10px] text-on-surface-variant mt-1 tracking-widest">8 9 2 1 0 0 4 5 7 2</span>
+</div>
+</div>
+<div class="mt-6 flex gap-4 justify-center">
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-high hover:bg-surface-variant text-on-surface rounded-lg font-label text-sm transition-colors">
+<span class="material-symbols-outlined text-sm">print</span> Print
+                        </button>
+<button class="flex items-center gap-2 px-4 py-2 bg-surface-container-high hover:bg-surface-variant text-on-surface rounded-lg font-label text-sm transition-colors">
+<span class="material-symbols-outlined text-sm">download</span> Save PDF
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

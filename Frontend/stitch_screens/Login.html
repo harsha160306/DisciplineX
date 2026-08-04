@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login | MIC Attendance & Remarks</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts: Noto Serif, Inter, Public Sans -->
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&family=Inter:wght@300;400;500;600&family=Public+Sans:wght@300;400;600&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Noto+Serif:wght@100..900&family=Public+Sans:wght@100..900&display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container-lowest": "#ffffff",
+                      "surface": "#faf9fa",
+                      "tertiary-fixed": "#f9e37a",
+                      "tertiary": "#6d5e00",
+                      "on-secondary-fixed-variant": "#42474b",
+                      "surface-container-highest": "#e3e2e3",
+                      "inverse-primary": "#b1c5ff",
+                      "tertiary-container": "#bfab49",
+                      "on-secondary-fixed": "#171c20",
+                      "on-surface-variant": "#434653",
+                      "surface-tint": "#2259bf",
+                      "on-background": "#1b1c1d",
+                      "surface-variant": "#e3e2e3",
+                      "outline": "#737784",
+                      "on-primary": "#ffffff",
+                      "inverse-surface": "#303031",
+                      "outline-variant": "#c3c6d5",
+                      "surface-dim": "#dbdadb",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#e7ebff",
+                      "surface-bright": "#faf9fa",
+                      "secondary-fixed": "#dfe3e8",
+                      "on-tertiary-fixed-variant": "#524600",
+                      "background": "#faf9fa",
+                      "secondary-fixed-dim": "#c2c7cc",
+                      "surface-container-low": "#f5f3f4",
+                      "primary-container": "#3366cc",
+                      "error-container": "#ffdad6",
+                      "on-error": "#ffffff",
+                      "inverse-on-surface": "#f2f0f1",
+                      "secondary-container": "#dfe3e8",
+                      "secondary": "#5a5f63",
+                      "on-tertiary-container": "#4a3f00",
+                      "on-primary-fixed-variant": "#00419d",
+                      "on-tertiary-fixed": "#211b00",
+                      "tertiary-fixed-dim": "#dcc661",
+                      "primary": "#094cb2",
+                      "surface-container-high": "#e9e8e9",
+                      "primary-fixed-dim": "#b1c5ff",
+                      "on-error-container": "#93000a",
+                      "surface-container": "#efedee",
+                      "primary-fixed": "#d9e2ff",
+                      "on-secondary-container": "#606569",
+                      "on-surface": "#1b1c1d",
+                      "on-primary-fixed": "#001946",
+                      "on-secondary": "#ffffff",
+                      "error": "#ba1a1a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "fontFamily": {
+                      "headline": ["Noto Serif"],
+                      "display": ["Noto Serif"],
+                      "body": ["Inter"],
+                      "label": ["Public Sans"]
+              }
+            },
+          }
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #faf9fa;
+        }
+        .font-serif { font-family: 'Noto Serif', serif; }
+        .font-sans { font-family: 'Inter', sans-serif; }
+        .font-label { font-family: 'Public Sans', sans-serif; }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .primary-gradient {
+            background: linear-gradient(135deg, #094cb2 0%, #3366cc 100%);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #094cb2 !important;
+            box-shadow: 0 0 0 2px rgba(9, 76, 178, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-background min-h-screen flex flex-col items-center justify-center p-6 sm:p-12">
+<!-- Brand Identity Section (Top Center) -->
+<header class="flex flex-col items-center gap-6 mb-12 animate-fade-in">
+<div class="w-24 h-24 sm:w-32 sm:h-32 transition-transform duration-500 hover:scale-105">
+<img alt="MIC College Logo" class="w-full h-full object-contain rounded-sm" src="https://lh3.googleusercontent.com/aida/AP1WRLtF5rw-Ywcjyav6sMhJa_pnZoSO39_crmkuaYNZ8Q2hISiNEI3QvDp59_MfkhkfrKhcGzoERc680B9xfyGPXUkWPJ3uoDJ0zPDe-et-cdzY-7ckBbY6DvraqyRm-6riNehr-hrTgXhdIGIYDuwzZ8MO84af7dw61qo1ZYzs6gijJJ932r0xmMQtWDyJ38iTWaJQ5u1KqEk_cYWJcikWiJCCHuqjTBi76OhqhzjMj8izS1VjxTWPrwWPwunC"/>
+</div>
+<div class="text-center space-y-2">
+<h1 class="font-display text-3xl sm:text-4xl md:text-5xl font-bold text-primary tracking-tight">
+                MIC Attendance & Remarks
+            </h1>
+<p class="font-label text-sm uppercase tracking-widest text-on-surface-variant font-medium">
+                Discipline Incharge Login
+            </p>
+</div>
+</header>
+<!-- Login Card -->
+<main class="w-full max-w-md">
+<div class="glass-card p-8 sm:p-10 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-outline-variant/15 transition-all duration-300">
+<div class="hidden mb-6 p-4 rounded-lg bg-error-container text-on-error-container text-sm font-medium flex items-center gap-3 animate-shake" id="error-message">
+<span class="material-symbols-outlined text-error">error</span>
+                Invalid username or password. Please try again.
+            </div>
+<form class="space-y-6" id="login-form">
+<!-- Username Field -->
+<div class="space-y-2">
+<label class="font-label text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1" for="username">
+                        Username
+                    </label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">person</span>
+<input class="w-full pl-12 pr-4 py-3.5 bg-surface-container-lowest border border-outline-variant/30 rounded-xl text-on-surface placeholder:text-outline transition-all duration-200" id="username" name="username" placeholder="Enter Username" required="" type="text"/>
+</div>
+</div>
+<!-- Password Field -->
+<div class="space-y-2">
+<label class="font-label text-xs font-semibold text-on-surface-variant uppercase tracking-wider ml-1" for="password">
+                        Password
+                    </label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">lock</span>
+<input class="w-full pl-12 pr-12 py-3.5 bg-surface-container-lowest border border-outline-variant/30 rounded-xl text-on-surface placeholder:text-outline transition-all duration-200" id="password" name="password" placeholder="Enter Password" required="" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors" onclick="togglePassword()" type="button">
+<span class="material-symbols-outlined" id="pass-icon">visibility</span>
+</button>
+</div>
+</div>
+<!-- Login Action -->
+<button class="w-full primary-gradient text-white font-label text-sm font-bold uppercase tracking-widest py-4 rounded-xl shadow-lg shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:scale-95 transition-all duration-200 mt-4 flex items-center justify-center gap-2" type="submit">
+                    Login
+                    <span class="material-symbols-outlined text-lg">login</span>
+</button>
+</form>
+<div class="mt-8 pt-8 border-t border-outline-variant/15 text-center">
+<a class="font-label text-xs font-semibold text-primary hover:underline underline-offset-4 decoration-2 transition-all" href="#">
+                    Forgot Credentials?
+                </a>
+</div>
+</div>
+<footer class="mt-12 text-center">
+<p class="font-label text-[10px] text-outline uppercase tracking-widest">
+                © 2024 Modern Institute College • Secure Access
+            </p>
+</footer>
+</main>
+<script>
+        // Authentication Logic
+        const loginForm = document.getElementById('login-form');
+        const errorMessage = document.getElementById('error-message');
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            // Strict credentials check
+            if (user === 'discipline incharge' && pass === 'incharge@123') {
+                // Successful Login
+                errorMessage.classList.add('hidden');
+                
+                // Add success visual feedback
+                const btn = e.target.querySelector('button[type="submit"]');
+                btn.innerHTML = '<span class="material-symbols-outlined animate-spin">sync</span> Validating...';
+                btn.classList.replace('primary-gradient', 'bg-tertiary');
+                
+                setTimeout(() => {
+                    // Redirect simulation (using common dashboard path for demo purposes)
+                    window.location.href = '#dashboard';
+                    alert('Success! Redirecting to Dashboard.');
+                }, 800);
+            } else {
+                // Failed Login
+                errorMessage.classList.remove('hidden');
+                errorMessage.classList.add('animate-shake');
+                
+                // Reset shake animation for repeated failures
+                setTimeout(() => {
+                    errorMessage.classList.remove('animate-shake');
+                }, 500);
+            }
+        });
+
+        // UI Interactions
+        function togglePassword() {
+            const passInput = document.getElementById('password');
+            const icon = document.getElementById('pass-icon');
+            if (passInput.type === 'password') {
+                passInput.type = 'text';
+                icon.textContent = 'visibility_off';
+            } else {
+                passInput.type = 'password';
+                icon.textContent = 'visibility';
+            }
+        }
+
+        // Add tailwind custom animations via style
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                25% { transform: translateX(-4px); }
+                75% { transform: translateX(4px); }
+            }
+            .animate-shake {
+                animation: shake 0.4s ease-in-out;
+            }
+            @keyframes fade-in {
+                from { opacity: 0; transform: translateY(-10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-fade-in {
+                animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body></html>

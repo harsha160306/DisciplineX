@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>MIC Attendance &amp; Remarks - Home</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;600;700&amp;family=Inter:wght@400;500;600&amp;family=Public+Sans:wght@500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#3366cc",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed-variant": "#00419d",
+                    "surface-container-low": "#f5f3f4",
+                    "surface-tint": "#2259bf",
+                    "surface-bright": "#faf9fa",
+                    "surface-variant": "#e3e2e3",
+                    "inverse-primary": "#b1c5ff",
+                    "primary-fixed": "#d9e2ff",
+                    "on-surface": "#1b1c1d",
+                    "tertiary-container": "#bfab49",
+                    "inverse-on-surface": "#f2f0f1",
+                    "on-tertiary-fixed": "#211b00",
+                    "surface-container-highest": "#e3e2e3",
+                    "on-error": "#ffffff",
+                    "on-background": "#1b1c1d",
+                    "secondary-container": "#dfe3e8",
+                    "tertiary": "#6d5e00",
+                    "background": "#faf9fa",
+                    "tertiary-fixed": "#f9e37a",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#303031",
+                    "outline": "#737784",
+                    "on-secondary-fixed-variant": "#42474b",
+                    "on-primary": "#ffffff",
+                    "primary": "#094cb2",
+                    "on-tertiary-container": "#4a3f00",
+                    "on-secondary-container": "#606569",
+                    "on-tertiary-fixed-variant": "#524600",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#c2c7cc",
+                    "error": "#ba1a1a",
+                    "surface": "#faf9fa",
+                    "on-surface-variant": "#434653",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#efedee",
+                    "on-primary-container": "#e7ebff",
+                    "outline-variant": "#c3c6d5",
+                    "primary-fixed-dim": "#b1c5ff",
+                    "on-primary-fixed": "#001946",
+                    "surface-dim": "#dbdadb",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#e9e8e9",
+                    "on-secondary-fixed": "#171c20",
+                    "tertiary-fixed-dim": "#dcc661",
+                    "secondary": "#5a5f63",
+                    "secondary-fixed": "#dfe3e8"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {},
+            "fontFamily": {
+                    "headline": [
+                            "Noto Serif"
+                    ],
+                    "display": [
+                            "Noto Serif"
+                    ],
+                    "body": [
+                            "Inter"
+                    ],
+                    "label": [
+                            "Public Sans"
+                    ]
+            },
+            "fontSize": {}
+    },
+        },
+      }
+    </script>
+<style type="text/tailwindcss">
+        @layer utilities {
+            .glass-panel {
+                @apply bg-surface-lowest/80 backdrop-blur-xl border border-outline-variant/15;
+            }
+            .material-symbols-outlined {
+              font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            }
+            .material-symbols-outlined.fill {
+                font-variation-settings: 'FILL' 1;
+            }
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen flex antialiased">
+<!-- SideNavBar -->
+<nav class="h-screen w-64 flex flex-col fixed left-0 top-0 pt-20 bg-surface-container-lowest dark:bg-surface-dim z-40 hidden lg:flex border-r border-outline-variant/15">
+<div class="px-6 pb-6">
+<div class="flex items-center gap-4">
+<img alt="Faculty Profile" class="w-12 h-12 rounded-full object-cover border border-outline-variant/15" data-alt="A professional headshot of a faculty member, Dr. Alexandria, with a soft, bright background. She is wearing formal academic or business attire, reflecting an authoritative yet approachable persona. The lighting is soft and studio-quality, emphasizing clarity and professionalism in a light-mode setting." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBBnw6IODPyTJZFsvHeiuyhoDS7VEaEsxko1noHoG2vP74Y2YhLzAA7-CtYCMoBJMyAvW0YdB3eNxJvqQIbT-ZYAUQAmlg0B_Guxne9FQZ44X4i5-68AlPBfaN-bx2rhZqWaa4zduP50Hp-XgXQPbN3loEEHmvbM_nXNayCSApe6sgGEbs-mkYThMvEq_vbWVPq3LpPHsRufkQ19iFSAJY-U3zUUr6sNAP_BunZryKwYXPnzzRI8SGUctFMxMR6x8QbSuu6pDdvG4Nw"/>
+<div>
+<div class="font-display font-semibold text-primary">Dr. Alexandria</div>
+<div class="font-body text-label-lg text-on-surface-variant">Senior Faculty</div>
+</div>
+</div>
+<button class="mt-6 w-full bg-primary hover:bg-primary/90 text-on-primary font-label font-semibold py-3 px-4 rounded-xl transition-colors shadow-sm flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+                Quick Scan
+            </button>
+</div>
+<div class="flex-1 overflow-y-auto hidden lg:flex flex-col gap-2">
+<!-- Navigation Links -->
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-xl px-4 py-3 mx-2 font-body text-label-lg cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined fill">home</span>
+<span>Home</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl font-body text-label-lg cursor-pointer transition-transform duration-150 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+<span>Scan</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl font-body text-label-lg cursor-pointer transition-transform duration-150 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">search</span>
+<span>Search</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl font-body text-label-lg cursor-pointer transition-transform duration-150 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">how_to_reg</span>
+<span>Registration</span>
+</a>
+</div>
+<div class="mt-auto pb-6 hidden lg:flex flex-col gap-2 pt-4 border-t border-outline-variant/15">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl font-body text-label-lg cursor-pointer transition-transform duration-150 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl font-body text-label-lg cursor-pointer transition-transform duration-150 hover:bg-surface-container-high transition-colors" href="#">
+<span class="material-symbols-outlined">help</span>
+<span>Help</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 lg:ml-64 flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="w-full sticky top-0 z-50 bg-surface-bright/80 backdrop-blur-xl dark:bg-surface-dim/80 shadow-sm flex justify-between items-center px-8 h-16 w-full max-w-full bg-surface-container-low dark:bg-surface-container-high">
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Button -->
+<button class="lg:hidden p-2 text-on-surface-variant hover:bg-primary/5 rounded-full transition-all">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<div class="flex items-center gap-3">
+<img alt="MIC Attendance &amp; Remarks Logo" class="h-8 w-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAWw4yrRk8utVOzOsrHEalzBAZ-hjCxwV6uN9KNzC8Kv1mtRHvSzHo-n6r5v4lu0nvMsS_VomThq5HlYKQ4GjEYM0hvo-Q95b9rfBBJ-do7mihp11pUmxp48ewRX8ZKoky4R8u5poM14MhaJT9l1KHJQZM2FJVSiRSBJm-l74eyD-OojeB79xwdCig4D3pSSB19q80bo2gTk8zZFclKu3A7puNg1Y4klWwA_KBOSXuQiCjjFJtyuR0aoxNT0_ptagNESw18WVPdwqaC"/>
+<span class="font-display font-bold text-primary dark:text-primary-fixed text-xl hidden sm:block">MIC Attendance &amp; Remarks</span>
+</div>
+</div>
+<nav class="hidden md:flex gap-6 items-center">
+<a class="text-primary border-b-2 border-primary pb-1 font-display text-headline-sm tracking-tight active:scale-95 duration-200" href="#">Dashboard</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary/5 transition-all px-2 py-1 rounded-lg font-display text-headline-sm tracking-tight active:scale-95 duration-200" href="#">Reports</a>
+</nav>
+<div class="flex items-center">
+<button class="bg-primary hover:bg-primary/90 text-on-primary font-label font-semibold py-2 px-6 rounded-full transition-colors active:scale-95 duration-200">
+                    Register
+                </button>
+</div>
+</header>
+<!-- Main Canvas -->
+<main class="flex-1 p-6 md:p-12 lg:p-20 overflow-y-auto">
+<div class="max-w-5xl mx-auto">
+<!-- Page Header -->
+<div class="mb-12 md:mb-20 text-center max-w-2xl mx-auto">
+<h1 class="font-display text-4xl md:text-5xl font-bold text-on-surface mb-4 tracking-tight leading-tight">Attendance Capture</h1>
+<p class="font-body text-lg text-on-surface-variant">Select a method to record student attendance efficiently and accurately.</p>
+</div>
+<!-- Action Cards Grid -->
+<div class="grid md:grid-cols-2 gap-8 lg:gap-12">
+<!-- Card 1: Scan -->
+<div class="group relative rounded-[2rem] bg-surface-container-lowest p-8 transition-all duration-300 hover:-translate-y-2 hover:bg-surface-container-low overflow-hidden">
+<!-- Decorative background glow -->
+<div class="absolute -top-24 -right-24 w-64 h-64 bg-primary/5 rounded-full blur-3xl transition-opacity group-hover:opacity-100 opacity-50 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="w-16 h-16 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center mb-8 shadow-sm">
+<span class="material-symbols-outlined text-3xl">qr_code_scanner</span>
+</div>
+<h2 class="font-display text-3xl font-bold text-on-surface mb-4">Scan</h2>
+<p class="font-body text-on-surface-variant mb-10 text-lg leading-relaxed flex-grow">
+                                Scan a student's ID card using the webcam for instant attendance logging. Ideal for rapid processing during entry.
+                            </p>
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-label font-semibold py-4 px-6 rounded-xl transition-all duration-200 group-hover:shadow-md flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">center_focus_strong</span>
+                                Open Scanner
+                            </button>
+</div>
+</div>
+<!-- Card 2: Register Number -->
+<div class="group relative rounded-[2rem] bg-surface-container-lowest p-8 transition-all duration-300 hover:-translate-y-2 hover:bg-surface-container-low overflow-hidden">
+<!-- Decorative background glow -->
+<div class="absolute -bottom-24 -left-24 w-64 h-64 bg-tertiary-container/10 rounded-full blur-3xl transition-opacity group-hover:opacity-100 opacity-50 pointer-events-none"></div>
+<div class="relative z-10 flex flex-col h-full">
+<div class="w-16 h-16 rounded-2xl bg-surface-container-highest text-on-surface flex items-center justify-center mb-8 shadow-sm">
+<span class="material-symbols-outlined text-3xl">search</span>
+</div>
+<h2 class="font-display text-3xl font-bold text-on-surface mb-4">Register Number</h2>
+<p class="font-body text-on-surface-variant mb-10 text-lg leading-relaxed flex-grow">
+                                Search a student manually using their unique register number. Useful for exceptions or when ID cards are unavailable.
+                            </p>
+<button class="w-full bg-surface-container-high hover:bg-surface-variant text-primary font-label font-semibold py-4 px-6 rounded-xl transition-all duration-200 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">manage_search</span>
+                                Search Student
+                            </button>
+</div>
+</div>
+</div>
+<!-- Recent Activity / Info Section (Optional filler for visual balance) -->
+<div class="mt-20 pt-12 border-t border-outline-variant/15">
+<div class="flex items-center justify-between mb-8">
+<h3 class="font-display text-2xl font-semibold text-on-surface">System Status</h3>
+</div>
+<div class="flex flex-wrap gap-4">
+<div class="bg-surface-container-lowest px-4 py-3 rounded-xl border border-outline-variant/15 flex items-center gap-3">
+<div class="w-3 h-3 rounded-full bg-primary animate-pulse"></div>
+<span class="font-body text-sm text-on-surface-variant">Scanner Active</span>
+</div>
+<div class="bg-surface-container-lowest px-4 py-3 rounded-xl border border-outline-variant/15 flex items-center gap-3">
+<span class="material-symbols-outlined text-on-surface-variant text-sm">cloud_done</span>
+<span class="font-body text-sm text-on-surface-variant">Database Synced</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Remark Search - MIC Attendance &amp; Remarks</title>
+<!-- Google Fonts: Noto Serif (Headline/Display), Inter (Body), Public Sans (Label) -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Serif:ital,wght@0,400;0,600;0,700;1,400&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-container": "#3366cc",
+                    "on-error-container": "#93000a",
+                    "on-primary-fixed-variant": "#00419d",
+                    "surface-container-low": "#f5f3f4",
+                    "surface-tint": "#2259bf",
+                    "surface-bright": "#faf9fa",
+                    "surface-variant": "#e3e2e3",
+                    "inverse-primary": "#b1c5ff",
+                    "primary-fixed": "#d9e2ff",
+                    "on-surface": "#1b1c1d",
+                    "tertiary-container": "#bfab49",
+                    "inverse-on-surface": "#f2f0f1",
+                    "on-tertiary-fixed": "#211b00",
+                    "surface-container-highest": "#e3e2e3",
+                    "on-error": "#ffffff",
+                    "on-background": "#1b1c1d",
+                    "secondary-container": "#dfe3e8",
+                    "tertiary": "#6d5e00",
+                    "background": "#faf9fa",
+                    "tertiary-fixed": "#f9e37a",
+                    "on-secondary": "#ffffff",
+                    "inverse-surface": "#303031",
+                    "outline": "#737784",
+                    "on-secondary-fixed-variant": "#42474b",
+                    "on-primary": "#ffffff",
+                    "primary": "#094cb2",
+                    "on-tertiary-container": "#4a3f00",
+                    "on-secondary-container": "#606569",
+                    "on-tertiary-fixed-variant": "#524600",
+                    "error-container": "#ffdad6",
+                    "secondary-fixed-dim": "#c2c7cc",
+                    "error": "#ba1a1a",
+                    "surface": "#faf9fa",
+                    "on-surface-variant": "#434653",
+                    "on-tertiary": "#ffffff",
+                    "surface-container": "#efedee",
+                    "on-primary-container": "#e7ebff",
+                    "outline-variant": "#c3c6d5",
+                    "primary-fixed-dim": "#b1c5ff",
+                    "on-primary-fixed": "#001946",
+                    "surface-dim": "#dbdadb",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-container-high": "#e9e8e9",
+                    "on-secondary-fixed": "#171c20",
+                    "tertiary-fixed-dim": "#dcc661",
+                    "secondary": "#5a5f63",
+                    "secondary-fixed": "#dfe3e8"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "fontFamily": {
+                    "headline": ["Noto Serif", "serif"],
+                    "display": ["Noto Serif", "serif"],
+                    "body": ["Inter", "sans-serif"],
+                    "label": ["Public Sans", "sans-serif"]
+            }
+          }
+        }
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes slideUpFade {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-toast {
+            animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+    </style>
+</head>
+<body class="bg-surface text-on-surface font-body min-h-screen flex flex-col antialiased">
+<!-- TopNavBar (From JSON) -->
+<nav class="bg-surface-bright/80 backdrop-blur-xl dark:bg-surface-dim/80 w-full sticky top-0 z-50 bg-surface-container-low shadow-sm flex justify-between items-center px-8 h-16 max-w-full">
+<div class="flex items-center gap-4">
+<span class="font-display font-bold text-primary dark:text-primary-fixed text-xl">MIC Attendance &amp; Remarks</span>
+</div>
+<div class="hidden md:flex items-center gap-8 font-display text-headline-sm tracking-tight">
+<!-- Both Dashboard and Reports are inactive on this flow -->
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary/5 p-2 rounded-lg active:scale-95 duration-200" href="#">Dashboard</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors hover:bg-primary/5 p-2 rounded-lg active:scale-95 duration-200" href="#">Reports</a>
+</div>
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary px-6 py-2 rounded-xl font-label text-sm font-medium hover:opacity-90 transition-all active:scale-95 shadow-sm">
+            Register
+        </button>
+</nav>
+<div class="flex flex-1 relative">
+<!-- SideNavBar (From JSON) -->
+<aside class="h-screen w-64 hidden lg:flex flex-col fixed left-0 top-0 pt-20 bg-surface-container-lowest dark:bg-surface-dim border-r border-outline-variant/15 z-40">
+<div class="px-6 mb-8 mt-4 flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest overflow-hidden">
+<img alt="Faculty Profile" class="w-full h-full object-cover" data-alt="A distinguished senior academic faculty member in a modern university setting, dressed in professional attire, well-lit portrait, conveying scholarly authority and approachability." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCwwE1gj-L7oW_UziFS3OacTP5piW2EgZXLl2rSd1WKCDddHMfBjQ4wh8ZmEYioQHO8i40Lx5ZYUGd2zo8CCyAzrSabCqN95L7V6JpLMG6nug5yn4QXuQNjZpS--C0Y_pXwr7MxeMLBT3E8HYQHSoEu6IsJDaBMY-2g_KtHszMdQahO6UQaosGaaFFg3zyZkh0ibrku77ybS67GKPE9m6QgS2qvpBotq9UE9S8grOVQR0AgkL8d8BNUtjrQ-Khzrm0WqCktiAuruSfg"/>
+</div>
+<div>
+<h3 class="font-display font-semibold text-primary text-sm">Dr. Alexandria</h3>
+<p class="font-label text-xs text-on-surface-variant">Senior Faculty</p>
+</div>
+</div>
+<nav class="flex flex-col gap-2 flex-1 font-body text-label-lg">
+<!-- Inactive -->
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl transition-colors cursor-pointer duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span>Home</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl transition-colors cursor-pointer duration-150" href="#">
+<span class="material-symbols-outlined">qr_code_scanner</span>
+<span>Scan</span>
+</a>
+<!-- Active (Context: Remark Search Page) -->
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-xl px-4 py-3 mx-2 cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">search</span>
+<span class="font-medium">Search</span>
+</a>
+<!-- Inactive -->
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl transition-colors cursor-pointer duration-150" href="#">
+<span class="material-symbols-outlined">how_to_reg</span>
+<span>Registration</span>
+</a>
+</nav>
+<div class="p-4 mt-auto mb-6">
+<button class="w-full bg-surface-container border border-outline-variant/15 text-primary rounded-xl py-3 font-label font-medium hover:bg-surface-container-high transition-colors flex justify-center items-center gap-2">
+<span class="material-symbols-outlined text-sm">bolt</span> Quick Scan
+                </button>
+</div>
+<div class="border-t border-outline-variant/15 pt-4 pb-6 flex flex-col gap-2 font-body text-label-lg">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-2 mx-2 hover:bg-surface-container-high rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">settings</span>
+<span>Settings</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-2 mx-2 hover:bg-surface-container-high rounded-xl transition-colors" href="#">
+<span class="material-symbols-outlined text-xl">help</span>
+<span>Help</span>
+</a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 lg:ml-64 p-8 md:p-12 max-w-5xl">
+<header class="mb-10">
+<h1 class="font-headline text-4xl text-on-surface mb-6">Student Evaluation</h1>
+<!-- Toggle Switch -->
+<div class="inline-flex bg-surface-container rounded-full p-1 shadow-inner">
+<button class="px-8 py-2.5 rounded-full font-label text-sm font-medium text-on-surface-variant hover:text-on-surface transition-colors">
+                        Attendance
+                    </button>
+<button class="px-8 py-2.5 rounded-full font-label text-sm font-medium bg-surface-container-lowest text-primary shadow-sm">
+                        Remark
+                    </button>
+</div>
+</header>
+<!-- Search Field -->
+<div class="mb-12">
+<label class="block font-label text-xs uppercase tracking-widest text-on-surface-variant mb-3 font-semibold">Locate Record</label>
+<div class="flex gap-4 max-w-xl">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
+<input class="w-full bg-surface-container-lowest border border-outline-variant/15 rounded-xl py-3.5 pl-12 pr-4 font-body text-on-surface focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all shadow-sm" placeholder="Enter Register Number" type="text" value="2024ME045"/>
+</div>
+<button class="bg-surface-container-highest text-primary border border-outline-variant/15 rounded-xl px-8 py-3.5 font-label font-semibold hover:bg-surface-variant transition-colors flex items-center gap-2">
+                        Search
+                    </button>
+</div>
+</div>
+<!-- Student Profile Card (Bento-style Glassmorphism) -->
+<div class="bg-surface-container-lowest/80 backdrop-blur-md rounded-2xl p-8 mb-10 shadow-[0_8px_32px_-12px_rgba(0,0,0,0.08)] border border-outline-variant/10 flex flex-col md:flex-row gap-8 items-center md:items-start relative overflow-hidden">
+<!-- Decorative background blob -->
+<div class="absolute -top-10 -right-10 w-40 h-40 bg-primary-container/20 rounded-full blur-3xl"></div>
+<div class="shrink-0 relative">
+<img class="w-32 h-32 rounded-full object-cover shadow-md border-4 border-surface-container-lowest" data-alt="Professional headshot of a young female engineering college student of Indian descent named Anjali Verma. She is wearing neat casual campus attire. Background is a softly blurred modern university mechanical lab with bright, cool lighting. High-end editorial photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCTuEzyi6BX288E_wzMVHXWMUOfXKPnfoPAH-0dsuJNUGciaHdnYoTT5IyMfM-JJZ7OW1ZV70AIG19OH-9tzOJmQq8qbSS0Xg34ph03JJs5GmH2skFMmBT1Xw7a2IL6TSpY0ftt8RCdDU_LuiAX1WBu9ZPaWZzIH6GwRQIVRSprKZ-2ZlDKud2OZ_VEYon1QNT90Cs_CwlzK6xDNIjcFck0Y3tFfIkkamZS7duB52mqHKmOgPa_uVfZVj72aDAEqz9luXXxnSkVE_YB"/>
+<div class="absolute bottom-1 right-1 w-6 h-6 bg-tertiary rounded-full border-2 border-surface-container-lowest flex items-center justify-center">
+<span class="material-symbols-outlined text-white text-[12px]">verified</span>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-4 z-10 text-center md:text-left">
+<div>
+<h2 class="font-headline text-3xl text-on-surface mb-1">Anjali Verma</h2>
+<p class="font-label text-on-surface-variant text-sm">Undergraduate Scholar</p>
+</div>
+<div class="flex flex-wrap justify-center md:justify-start gap-3 mt-2">
+<div class="bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/10 flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">badge</span>
+<span class="font-label text-sm font-medium text-on-surface">2024ME045</span>
+</div>
+<div class="bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/10 flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">precision_manufacturing</span>
+<span class="font-label text-sm font-medium text-on-surface">Mechanical</span>
+</div>
+<div class="bg-surface-container px-4 py-2 rounded-lg border border-outline-variant/10 flex items-center gap-2">
+<span class="material-symbols-outlined text-on-surface-variant text-[18px]">school</span>
+<span class="font-label text-sm font-medium text-on-surface">2nd Year</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Remark Form Area -->
+<div class="bg-surface-container-lowest rounded-2xl p-8 shadow-sm border border-outline-variant/10">
+<label class="block font-label text-xs uppercase tracking-widest text-on-surface-variant mb-4 font-semibold flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">edit_note</span>
+                    Enter Remark
+                </label>
+<textarea class="w-full bg-surface border border-outline-variant/15 rounded-xl p-5 min-h-[180px] font-body text-on-surface text-base focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all resize-y shadow-inner mb-6 leading-relaxed" placeholder="Type the student's remark here..."></textarea>
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary rounded-full w-full md:w-auto md:px-12 py-4 font-label font-semibold text-lg hover:shadow-lg transition-all active:scale-[0.98] flex items-center justify-center gap-3 float-right">
+                    Submit Remark <span class="material-symbols-outlined">arrow_forward</span>
+</button>
+<div class="clear-both"></div>
+</div>
+</main>
+</div>
+<!-- Success Notification (Toast) -->
+<div class="fixed bottom-8 right-8 z-50 bg-surface-container-lowest border-l-4 border-tertiary p-4 rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] flex items-center gap-4 min-w-[320px] animate-toast">
+<div class="w-10 h-10 rounded-full bg-tertiary-container/30 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+</div>
+<div>
+<h4 class="font-label font-bold text-on-surface text-sm">Success</h4>
+<p class="font-body text-sm text-on-surface-variant mt-0.5">Remark submitted successfully.</p>
+</div>
+<button class="ml-auto text-on-surface-variant hover:text-on-surface">
+<span class="material-symbols-outlined text-[20px]">close</span>
+</button>
+</div>
+</body></html>

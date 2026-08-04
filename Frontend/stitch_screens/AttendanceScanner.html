@@ -1,0 +1,256 @@
+<!DOCTYPE html><html lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Attendance Scanner</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Noto+Serif:wght@400;600;700&amp;family=Public+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-container": "#3366cc",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed-variant": "#00419d",
+                      "surface-container-low": "#f5f3f4",
+                      "surface-tint": "#2259bf",
+                      "surface-bright": "#faf9fa",
+                      "surface-variant": "#e3e2e3",
+                      "inverse-primary": "#b1c5ff",
+                      "primary-fixed": "#d9e2ff",
+                      "on-surface": "#1b1c1d",
+                      "tertiary-container": "#bfab49",
+                      "inverse-on-surface": "#f2f0f1",
+                      "on-tertiary-fixed": "#211b00",
+                      "surface-container-highest": "#e3e2e3",
+                      "on-error": "#ffffff",
+                      "on-background": "#1b1c1d",
+                      "secondary-container": "#dfe3e8",
+                      "tertiary": "#6d5e00",
+                      "background": "#faf9fa",
+                      "tertiary-fixed": "#f9e37a",
+                      "on-secondary": "#ffffff",
+                      "inverse-surface": "#303031",
+                      "outline": "#737784",
+                      "on-secondary-fixed-variant": "#42474b",
+                      "on-primary": "#ffffff",
+                      "primary": "#094cb2",
+                      "on-tertiary-container": "#4a3f00",
+                      "on-secondary-container": "#606569",
+                      "on-tertiary-fixed-variant": "#524600",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#c2c7cc",
+                      "error": "#ba1a1a",
+                      "surface": "#faf9fa",
+                      "on-surface-variant": "#434653",
+                      "on-tertiary": "#ffffff",
+                      "surface-container": "#efedee",
+                      "on-primary-container": "#e7ebff",
+                      "outline-variant": "#c3c6d5",
+                      "primary-fixed-dim": "#b1c5ff",
+                      "on-primary-fixed": "#001946",
+                      "surface-dim": "#dbdadb",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#e9e8e9",
+                      "on-secondary-fixed": "#171c20",
+                      "tertiary-fixed-dim": "#dcc661",
+                      "secondary": "#5a5f63",
+                      "secondary-fixed": "#dfe3e8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Noto Serif"
+                      ],
+                      "display": [
+                              "Noto Serif"
+                      ],
+                      "body": [
+                              "Inter"
+                      ],
+                      "label": [
+                              "Public Sans"
+                      ]
+              },
+              "fontSize": {}
+            },
+          },
+        }
+    </script>
+<style>
+        @keyframes scan-line {
+            0% { transform: translateY(0); opacity: 0.5; }
+            50% { transform: translateY(280px); opacity: 1; }
+            100% { transform: translateY(0); opacity: 0.5; }
+        }
+        .animate-scan {
+            animation: scan-line 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+        }
+        .ghost-border {
+            border: 1px solid rgba(195, 198, 213, 0.15); 
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface font-body min-h-screen flex flex-col antialiased">
+<nav class="w-full sticky top-0 z-50 bg-surface-bright/80 backdrop-blur-xl flex justify-between items-center px-8 h-16 w-full max-w-full shadow-sm">
+<div class="font-display font-bold text-primary text-xl tracking-tight">MIC Attendance &amp; Remarks</div>
+<div class="hidden md:flex gap-8 items-center">
+<a class="font-display text-headline-sm tracking-tight text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-all px-4 py-2 rounded-lg" href="#">Dashboard</a>
+<a class="font-display text-headline-sm tracking-tight text-on-surface-variant hover:text-primary hover:bg-primary/5 transition-all px-4 py-2 rounded-lg" href="#">Reports</a>
+</div>
+<button class="bg-gradient-to-r from-primary to-primary-container text-on-primary px-6 py-2 rounded-xl font-label font-semibold shadow-sm active:scale-95 duration-200">
+            Register
+        </button>
+</nav>
+<div class="flex flex-1 relative">
+<aside class="h-screen w-64 hidden lg:flex flex-col fixed left-0 top-0 pt-20 bg-surface-container-lowest border-r border-outline-variant/15 z-40">
+<div class="px-6 py-8 mb-4">
+<div class="font-display font-semibold text-primary text-xl mb-1">Dr. Alexandria</div>
+<div class="font-label text-sm text-on-surface-variant tracking-wide">Senior Faculty</div>
+</div>
+<nav class="flex-1 flex flex-col gap-2 font-body text-label-lg px-2">
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl transition-colors cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-medium">Home</span>
+</a>
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-xl px-4 py-3 mx-2 cursor-pointer transition-transform duration-150 shadow-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+<span class="font-medium">Scan</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl transition-colors cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-medium">Search</span>
+</a>
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl transition-colors cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">how_to_reg</span>
+<span class="font-medium">Registration</span>
+</a>
+</nav>
+<div class="mt-auto mb-8 px-6">
+<button class="w-full py-3 rounded-xl border border-primary/20 text-primary font-label font-semibold hover:bg-primary/5 transition-colors">
+                    Quick Scan
+                </button>
+</div>
+</aside>
+<main class="flex-1 lg:ml-64 p-6 lg:p-10 flex flex-col min-h-screen">
+<header class="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
+<div>
+<h1 class="font-display font-bold text-3xl md:text-4xl text-on-surface tracking-tight mb-2">Scan Identity</h1>
+<p class="font-body text-on-surface-variant max-w-2xl text-lg leading-relaxed">Position the student's identification card within the frame to automatically record attendance.</p>
+</div>
+<div class="bg-surface-container-lowest ghost-border rounded-xl px-5 py-3 shadow-sm flex items-center gap-3">
+<span class="material-symbols-outlined text-tertiary">calendar_clock</span>
+<div class="flex flex-col">
+<span class="font-label text-sm text-on-surface font-semibold" id="current-date">Jul 7, 2026</span>
+<span class="font-body text-xs text-on-surface-variant" id="current-time">09:32 AM</span>
+</div>
+</div>
+</header>
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8 flex-1">
+<section class="xl:col-span-8 bg-surface-container-lowest rounded-[2rem] p-4 lg:p-6 shadow-sm ghost-border flex flex-col relative overflow-hidden min-h-[500px]">
+<div class="absolute top-8 left-8 z-20 bg-surface-bright/90 backdrop-blur-md px-4 py-2 rounded-full font-label text-sm text-on-surface shadow-sm flex items-center gap-2 ghost-border">
+<span class="w-2 h-2 rounded-full bg-error animate-pulse"></span>
+<span class="font-semibold tracking-wide">LIVE FEED</span>
+</div>
+<div class="flex-1 rounded-[1.5rem] bg-surface-container-high relative overflow-hidden flex items-center justify-center">
+<div class="absolute inset-0 bg-cover bg-center opacity-30 blur-md" data-alt="A blurred background perspective of a modern, well-lit university classroom interior. The scene features light grey walls, natural daylight from tall windows, and the soft, out-of-focus shapes of student desks and a whiteboard. The overall aesthetic is clean, academic, and highly professional." style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAcKGiU-phEAQpZfPBQsTTWQCA0IhvfcBlFDZHe7G1Z_d1xQWe83BANmHsUuBTszwgBih4zep7_2PWCx71sk5Kc_0adpBy7NvYKywptetGloolLMQCmjvUW51V-tRAq7I8PIusu7kieuxAG04xyEKkWpFkKdzlQqh-WJyd_fiaao5Rv3XQICpwB1cEgWsf9WgJzovfdhgVPbKi8dHCpJtUt4gW-zpE8Q76btCHTagum7C1WD__Jx5yXHbl09RA3w5Sl4YgDTfo7h8UH')"></div>
+<div class="relative w-80 h-80 z-10">
+<div class="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-primary rounded-tl-2xl"></div>
+<div class="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-primary rounded-tr-2xl"></div>
+<div class="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-primary rounded-bl-2xl"></div>
+<div class="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-primary rounded-br-2xl"></div>
+<div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent shadow-[0_0_15px_3px_rgba(9,76,178,0.4)] animate-scan"></div>
+</div>
+<div class="absolute bottom-8 left-1/2 -translate-x-1/2 z-20 bg-inverse-surface/80 backdrop-blur-xl px-8 py-4 rounded-full shadow-lg">
+<p class="font-label text-inverse-on-surface font-medium tracking-wide whitespace-nowrap text-sm">Place the student's ID card inside the scanning area</p>
+</div>
+</div>
+</section>
+<aside class="xl:col-span-4 bg-surface-container-lowest rounded-[2rem] p-8 shadow-sm ghost-border flex flex-col relative">
+<div class="flex items-center justify-between mb-8">
+<h2 class="font-display font-semibold text-2xl text-on-surface">Match Found</h2>
+<span class="material-symbols-outlined text-tertiary text-3xl" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div class="flex flex-col items-center mb-8">
+<div class="w-36 h-36 rounded-full overflow-hidden bg-surface-container-high mb-6 p-1 border border-outline-variant/30 shadow-inner">
+<img class="object-cover w-full h-full rounded-full" data-alt="A high-end, editorial portrait photograph of an Indian male university student named Rahul Sharma. He has short, neatly styled hair and wears a crisp, light blue collared shirt. He looks directly at the camera with a calm, focused expression. The background is a soft, seamless studio grey. The lighting is professional, creating gentle contours on his face, fitting a premium digital archive aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBnM-pyl2GLRMVnjxwsCXyp4bZU_dGsSv6BzQCj0OKi8NlhK2UyNps1HU1jaO-RKjb9B_updyWAjRKfBDg572WWob87YdE1z3TdQcV8a2ef1wKEeFrB9sEdd27i_dIOWCyUVlMu7yFK_wIg3BX_KEVleXsL8hvR0fdmFsvCxZPM2qBBvYkaKN8J6PNGNIJVFnkkqqKKD13x4T5B4-oy5GOfVTfsdQ1i_tgyeDusR7TI6zX1MarWjuJGvuY-hBnEByhJW71sEbmPwDrB">
+</div>
+<h3 class="font-display font-bold text-3xl text-on-surface mb-2">Rahul Sharma</h3>
+<div class="bg-primary/10 px-4 py-1.5 rounded-full font-label font-bold text-primary tracking-wider text-sm">
+                            2024CS101
+                        </div>
+</div>
+<div class="bg-surface-bright rounded-2xl p-5 mb-10 ghost-border space-y-4">
+<div class="flex justify-between items-center pb-3 border-b border-outline-variant/15">
+<span class="font-label text-sm text-on-surface-variant uppercase tracking-widest">Department</span>
+<span class="font-body font-semibold text-on-surface">Computer Science</span>
+</div>
+<div class="flex justify-between items-center pb-3 border-b border-outline-variant/15">
+<span class="font-label text-sm text-on-surface-variant uppercase tracking-widest">Year</span>
+<span class="font-body font-semibold text-on-surface">3rd Year</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-label text-sm text-on-surface-variant uppercase tracking-widest">Status</span>
+<span class="font-body font-semibold text-tertiary flex items-center gap-1">
+<span class="material-symbols-outlined text-[18px]">check_circle</span> Active
+                            </span>
+</div>
+</div>
+<div class="mt-auto"><div class="flex flex-col gap-3">
+    <button class="w-full bg-gradient-to-r from-primary to-primary-container hover:from-primary-container hover:to-primary text-on-primary py-4 rounded-xl font-label font-bold text-lg shadow-md transition-all active:scale-[0.98] flex items-center justify-center gap-3" onclick="document.getElementById('success-modal').classList.remove('opacity-0', 'pointer-events-none'); document.getElementById('modal-card').classList.remove('scale-95');">
+        <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">how_to_reg</span>
+        Submit Attendance
+    </button>
+    
+</div></div>
+</aside>
+</div>
+</main>
+</div>
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-inverse-surface/60 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300" id="success-modal">
+<div class="bg-surface-container-lowest rounded-[2rem] p-10 max-w-md w-full mx-4 shadow-2xl ghost-border transform scale-95 transition-transform duration-300 flex flex-col items-center text-center" id="modal-card">
+<div class="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mb-6 relative">
+<div class="absolute inset-0 rounded-full border-4 border-primary/20 animate-ping opacity-20"></div>
+<span class="material-symbols-outlined text-5xl text-primary" style="font-variation-settings: 'FILL' 1;">task_alt</span>
+</div>
+<h3 class="font-display font-bold text-3xl text-on-surface mb-3">Attendance Recorded</h3>
+<p class="font-body text-on-surface-variant text-lg mb-10 leading-relaxed">Successfully logged today's attendance for <strong class="text-on-surface font-semibold">Rahul Sharma</strong>.</p>
+<div class="w-full space-y-4">
+<button class="w-full bg-gradient-to-r from-primary to-primary-container text-on-primary py-4 rounded-xl font-label font-bold text-lg shadow-sm hover:shadow-md transition-all" onclick="document.getElementById('success-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('modal-card').classList.add('scale-95');">
+                    Scan Next Student
+                </button>
+<button class="w-full bg-surface-container-high text-on-surface py-4 rounded-xl font-label font-semibold hover:bg-surface-variant transition-colors" onclick="document.getElementById('success-modal').classList.add('opacity-0', 'pointer-events-none'); document.getElementById('modal-card').classList.add('scale-95');">
+                    Return to Home
+                </button>
+</div>
+</div>
+</div>
+<script>
+        function updateDateTime() {
+            const now = new Date();
+            const dateOptions = { month: 'short', day: 'numeric', year: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit' };
+            
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', dateOptions);
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('en-US', timeOptions);
+        }
+        
+        updateDateTime();
+        setInterval(updateDateTime, 60000);
+    </script>
+
+
+
+
+</body></html>

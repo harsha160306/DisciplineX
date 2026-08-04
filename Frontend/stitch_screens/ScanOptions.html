@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Scan Options - MIC Attendance &amp; Remarks</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&amp;family=Noto+Serif:wght@400;500;600;700&amp;family=Public+Sans:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "primary-container": "#3366cc",
+                      "on-error-container": "#93000a",
+                      "on-primary-fixed-variant": "#00419d",
+                      "surface-container-low": "#f5f3f4",
+                      "surface-tint": "#2259bf",
+                      "surface-bright": "#faf9fa",
+                      "surface-variant": "#e3e2e3",
+                      "inverse-primary": "#b1c5ff",
+                      "primary-fixed": "#d9e2ff",
+                      "on-surface": "#1b1c1d",
+                      "tertiary-container": "#bfab49",
+                      "inverse-on-surface": "#f2f0f1",
+                      "on-tertiary-fixed": "#211b00",
+                      "surface-container-highest": "#e3e2e3",
+                      "on-error": "#ffffff",
+                      "on-background": "#1b1c1d",
+                      "secondary-container": "#dfe3e8",
+                      "tertiary": "#6d5e00",
+                      "background": "#faf9fa",
+                      "tertiary-fixed": "#f9e37a",
+                      "on-secondary": "#ffffff",
+                      "inverse-surface": "#303031",
+                      "outline": "#737784",
+                      "on-secondary-fixed-variant": "#42474b",
+                      "on-primary": "#ffffff",
+                      "primary": "#094cb2",
+                      "on-tertiary-container": "#4a3f00",
+                      "on-secondary-container": "#606569",
+                      "on-tertiary-fixed-variant": "#524600",
+                      "error-container": "#ffdad6",
+                      "secondary-fixed-dim": "#c2c7cc",
+                      "error": "#ba1a1a",
+                      "surface": "#faf9fa",
+                      "on-surface-variant": "#434653",
+                      "on-tertiary": "#ffffff",
+                      "surface-container": "#efedee",
+                      "on-primary-container": "#e7ebff",
+                      "outline-variant": "#c3c6d5",
+                      "primary-fixed-dim": "#b1c5ff",
+                      "on-primary-fixed": "#001946",
+                      "surface-dim": "#dbdadb",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-container-high": "#e9e8e9",
+                      "on-secondary-fixed": "#171c20",
+                      "tertiary-fixed-dim": "#dcc661",
+                      "secondary": "#5a5f63",
+                      "secondary-fixed": "#dfe3e8"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem",
+                      "2xl": "1rem",
+                      "3xl": "1.5rem"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Noto Serif"
+                      ],
+                      "display": [
+                              "Noto Serif"
+                      ],
+                      "body": [
+                              "Inter"
+                      ],
+                      "label": [
+                              "Public Sans"
+                      ]
+              },
+              "fontSize": {}
+      },
+          },
+        }
+      </script>
+<style>
+        .ghost-border {
+            border: 1px solid theme('colors.outline-variant' / 15%);
+        }
+        .diffused-shadow {
+            box-shadow: 0 24px 40px -12px theme('colors.on-surface' / 6%);
+        }
+        .glass-panel {
+            background-color: theme('colors.surface-container-lowest' / 80%);
+            backdrop-filter: blur(20px);
+        }
+      </style>
+</head>
+<body class="bg-background text-on-surface font-body antialiased flex h-screen overflow-hidden selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (Desktop) -->
+<nav class="h-screen w-64 hidden lg:flex flex-col fixed left-0 top-0 pt-20 bg-surface-container-lowest z-40 border-r border-outline-variant/15">
+<div class="px-6 mb-10">
+<h1 class="font-display font-semibold text-primary text-xl">MIC Attendance &amp; Remarks</h1>
+</div>
+<div class="flex-1 flex flex-col gap-2 overflow-y-auto">
+<!-- Home (Inactive) -->
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">home</span>
+<span class="font-body text-label-lg">Home</span>
+</a>
+<!-- Scan (Active) -->
+<a class="flex items-center gap-3 bg-primary-container text-on-primary-container rounded-xl px-4 py-3 mx-2 cursor-pointer transition-transform duration-150 shadow-sm" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+<span class="font-body text-label-lg font-medium">Scan</span>
+</a>
+<!-- Search (Inactive) -->
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">search</span>
+<span class="font-body text-label-lg">Search</span>
+</a>
+<!-- Registration (Inactive) -->
+<a class="flex items-center gap-3 text-on-surface-variant px-4 py-3 mx-2 hover:bg-surface-container-high rounded-xl cursor-pointer transition-transform duration-150" href="#">
+<span class="material-symbols-outlined">how_to_reg</span>
+<span class="font-body text-label-lg">Registration</span>
+</a>
+</div>
+<div class="p-6 mt-auto">
+<button class="w-full bg-gradient-to-r from-primary to-surface-tint text-on-primary font-label rounded-xl py-3 px-4 shadow-md hover:shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2">
+<span class="material-symbols-outlined text-sm">bolt</span>
+                Quick Scan
+            </button>
+<div class="flex items-center gap-3 mt-6 pt-6 border-t border-outline-variant/15">
+<div class="w-10 h-10 rounded-full bg-surface-container-high flex items-center justify-center overflow-hidden">
+<img alt="Faculty Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a female academic faculty member in her late 40s. She is wearing a tailored navy blazer over a crisp white blouse. The lighting is soft and natural, suggesting a bright office environment. The mood is approachable yet authoritative, fitting for a senior faculty profile picture. Minimalist background." src="https://lh3.googleusercontent.com/aida-public/AB6AXuA3-kQ4PoU6ttkgCeKMrVen4bQ7-82IFlJJOtZgV28Nb4118DzdIDQANXOSMfMah260uGAIdoF5ffSnCKwYjgyHYuexOzaDezN-bXWyNl05nuGozOoNvundoRFJjryjMSIAsawdjZf91xB7AF3cPpqyRZHGGvdLk_eS4jJb3Umq4EYZ10rWTWflNxvPkr5-CfvQP0Xegqb4eKwz3pRUvHICw0wrkAf3ci1N5E-74iARMCgmYKYU-2MqeTh226TvE97WqlFLMfHFNURQ"/>
+</div>
+<div>
+<p class="font-display font-medium text-sm">Dr. Alexandria</p>
+<p class="font-body text-xs text-on-surface-variant">Senior Faculty</p>
+</div>
+</div>
+<div class="flex gap-4 mt-4 pt-4 border-t border-outline-variant/15 text-on-surface-variant">
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[18px]">settings</span> <span class="text-xs font-label">Settings</span></a>
+<a class="hover:text-primary transition-colors flex items-center gap-1" href="#"><span class="material-symbols-outlined text-[18px]">help</span> <span class="text-xs font-label">Help</span></a>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col h-screen overflow-y-auto lg:ml-64 relative bg-surface-container-lowest">
+<!-- TopNavBar (Mobile Only) -->
+<header class="lg:hidden w-full sticky top-0 z-50 bg-surface-bright/80 backdrop-blur-xl shadow-sm border-b border-outline-variant/15 flex justify-between items-center px-6 h-16">
+<div class="font-display font-bold text-primary text-lg">MIC Attendance &amp; Remarks</div>
+<button class="text-primary active:scale-95 duration-200 hover:bg-primary/5 p-2 rounded-full transition-all">
+<span class="material-symbols-outlined">menu</span>
+</button>
+</header>
+<!-- Decorative Background Element -->
+<div class="absolute inset-0 z-0 pointer-events-none overflow-hidden opacity-30">
+<div class="absolute -top-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-primary/5 blur-3xl"></div>
+<div class="absolute bottom-[10%] -left-[10%] w-[50%] h-[50%] rounded-full bg-tertiary/5 blur-3xl"></div>
+</div>
+<div class="flex-1 relative z-10 p-6 md:p-12 lg:p-20 max-w-6xl mx-auto w-full flex flex-col">
+<!-- Page Header -->
+<div class="mb-12 max-w-2xl">
+<div class="flex items-center gap-2 text-primary mb-4">
+<span class="material-symbols-outlined">center_focus_strong</span>
+<span class="font-label text-sm uppercase tracking-widest font-medium">Capture Mode</span>
+</div>
+<h2 class="font-display text-4xl md:text-5xl font-bold text-on-surface leading-tight tracking-tight mb-4">
+                    Select Scan Action
+                </h2>
+<p class="font-body text-lg text-on-surface-variant leading-relaxed">
+                    Choose an operation to proceed. Scanning a student's ID card will automatically route to the selected workflow.
+                </p>
+</div>
+<!-- Options Grid (Bento/Card Style) -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 flex-1">
+<!-- Card 1: Attendance -->
+<div class="group relative rounded-3xl p-1 bg-surface-container-low ghost-border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:diffused-shadow cursor-pointer flex flex-col">
+<div class="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative h-full glass-panel rounded-[1.35rem] p-8 md:p-10 flex flex-col items-start">
+<div class="w-16 h-16 rounded-2xl bg-primary-container text-on-primary-container flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform duration-300 ease-out">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">qr_code_scanner</span>
+</div>
+<h3 class="font-display text-3xl font-semibold mb-4 text-on-surface">Attendance</h3>
+<p class="font-body text-on-surface-variant mb-10 text-base leading-relaxed flex-1">
+                            Scan a student's ID card to mark their daily attendance. The system will automatically log the timestamp and current location.
+                        </p>
+<button class="mt-auto inline-flex items-center gap-3 bg-gradient-to-r from-primary to-surface-tint text-on-primary font-label font-medium px-8 py-4 rounded-full transition-all hover:shadow-lg active:scale-95 w-full sm:w-auto justify-center">
+<span>Start Attendance Scan</span>
+<span class="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Card 2: Remark -->
+<div class="group relative rounded-3xl p-1 bg-surface-container-low ghost-border overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:diffused-shadow cursor-pointer flex flex-col">
+<div class="absolute inset-0 bg-gradient-to-br from-tertiary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+<div class="relative h-full glass-panel rounded-[1.35rem] p-8 md:p-10 flex flex-col items-start">
+<div class="w-16 h-16 rounded-2xl bg-surface-variant text-on-surface flex items-center justify-center mb-8 shadow-sm group-hover:scale-110 transition-transform duration-300 ease-out group-hover:bg-tertiary-container group-hover:text-on-tertiary-container">
+<span class="material-symbols-outlined text-3xl" style="font-variation-settings: 'FILL' 1;">comment</span>
+</div>
+<h3 class="font-display text-3xl font-semibold mb-4 text-on-surface">Remark</h3>
+<p class="font-body text-on-surface-variant mb-10 text-base leading-relaxed flex-1">
+                            Scan a student's ID card to record a specific behavioral or academic remark. Attaches directly to the student's central academic profile.
+                        </p>
+<button class="mt-auto inline-flex items-center gap-3 bg-surface-highest text-primary ghost-border font-label font-medium px-8 py-4 rounded-full transition-all hover:bg-surface-variant hover:text-on-surface active:scale-95 w-full sm:w-auto justify-center group-hover:border-primary/30">
+<span>Start Remark Scan</span>
+<span class="material-symbols-outlined text-sm transition-transform group-hover:translate-x-1">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

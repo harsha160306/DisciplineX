@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="100%" height="100%">
+  <!-- Definitions for gradients and shadows -->
+  <defs>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#4F46E5" />
+      <stop offset="100%" stop-color="#312E81" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24" />
+      <stop offset="100%" stop-color="#D97706" />
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="4" stdDeviation="4" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <!-- Shield Shape -->
+  <path d="M20 20 C20 20, 60 10, 60 10 C60 10, 100 20, 100 20 C100 50, 95 85, 60 110 C25 85, 20 50, 20 20 Z" 
+        fill="url(#shieldGrad)" filter="url(#shadow)" stroke="#FFFFFF" stroke-width="3" />
+
+  <!-- Inner border -->
+  <path d="M25 25 C25 25, 60 16, 60 16 C60 16, 95 25, 95 25 C95 52, 90 82, 60 104 C30 82, 25 52, 25 25 Z" 
+        fill="none" stroke="url(#goldGrad)" stroke-width="1.5" stroke-dasharray="3,3" />
+
+  <!-- Open Book Symbol -->
+  <!-- Left page -->
+  <path d="M38 58 C45 54, 55 56, 58 59 L58 41 C55 38, 45 36, 38 40 Z" fill="#FFFFFF" />
+  <!-- Right page -->
+  <path d="M82 58 C75 54, 65 56, 62 59 L62 41 C65 38, 75 36, 82 40 Z" fill="#FFFFFF" />
+  <!-- Book spine / middle -->
+  <line x1="60" y1="41" x2="60" y2="60" stroke="#E5E7EB" stroke-width="2" />
+
+  <!-- Star of Excellence above the book -->
+  <polygon points="60,21 63,27 70,28 65,33 66,40 60,36 54,40 55,33 50,28 57,27" fill="url(#goldGrad)" />
+
+  <!-- Graduation Cap -->
+  <path d="M43 78 L60 70 L77 78 L60 86 Z" fill="url(#goldGrad)" />
+  <path d="M50 78 L50 83 C50 86, 70 86, 70 83 L70 78" fill="none" stroke="url(#goldGrad)" stroke-width="2" />
+  <!-- Tassel -->
+  <path d="M60 70 L68 74 L68 81" fill="none" stroke="#FFFFFF" stroke-width="1" />
+
+  <!-- MIC Letters -->
+  <text x="60" y="100" font-family="system-ui, sans-serif" font-weight="900" font-size="12" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">M.I.C.</text>
+</svg>
