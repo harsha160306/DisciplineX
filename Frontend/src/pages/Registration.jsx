@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import api from '../utils/api';
 import { toast } from 'react-hot-toast';
 import JsBarcode from 'jsbarcode';
-import Tesseract from 'tesseract.js';
+// Tesseract is loaded dynamically on-demand to keep the initial bundle small
 
 export default function Registration() {
   // Form fields state
@@ -121,31 +121,34 @@ export default function Registration() {
     if (el) el.click();
   };
 
-  const startOcrProcessing = (imageFile) => {
+  const startOcrProcessing = async (imageFile) => {
     setIsOcrProcessing(true);
     setOcrProgressText('Processing ID card...');
 
-    Tesseract.recognize(
-      imageFile,
-      'eng',
-      { 
-        logger: m => {
-          if (m.status === 'recognizing text') {
-            setOcrProgressText(`Reading student information... (${Math.round(m.progress * 100)}%)`);
+    try {
+      // Dynamic import — Tesseract is only loaded when the user uploads a card
+      const Tesseract = (await import('tesseract.js')).default;
+      const { data: { text } } = await Tesseract.recognize(
+        imageFile,
+        'eng',
+        {
+          logger: m => {
+            if (m.status === 'recognizing text') {
+              setOcrProgressText(`Reading student information... (${Math.round(m.progress * 100)}%)`);
+            }
           }
-        } 
-      }
-    ).then(({ data: { text } }) => {
+        }
+      );
       parseOcrText(text);
       setIsOcrProcessing(false);
       setOcrProgressText('');
       toast.success('Student information extracted successfully.');
-    }).catch(err => {
+    } catch (err) {
       console.error('OCR Error:', err);
       setIsOcrProcessing(false);
       setOcrProgressText('');
       toast.error('Unable to read student information from this ID card. Please upload a clearer image or enter the details manually.');
-    });
+    }
   };
 
   const parseOcrText = (text) => {
