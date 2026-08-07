@@ -59,7 +59,7 @@ export default function Layout({ children }) {
       ]
     },
 
-    { path: '/admin/analytics',   icon: 'analytics',       label: 'Analytics',            roles: ['admin'] },
+
     { path: '/admin/reports',     icon: 'summarize',       label: 'Reports',              roles: ['admin'] },
     { path: '/admin/activity-log',icon: 'list_alt',        label: 'Activity Log',         roles: ['admin'] },
     { path: '/admin/settings',    icon: 'settings',        label: 'System Settings',      roles: ['admin'] },
