@@ -31,6 +31,26 @@ export const getStudentByRegisterNumber = async (req, res) => {
   }
 };
 
+export const filterStudents = async (req, res) => {
+  try {
+    const { department, academic_year } = req.query;
+
+    if (!department || !academic_year) {
+      return res.status(400).json({ message: 'Department and academic_year are required parameters.' });
+    }
+
+    const [students] = await pool.query(
+      'SELECT * FROM students WHERE department = ? AND academic_year = ?',
+      [department, academic_year]
+    );
+
+    res.status(200).json(students);
+  } catch (error) {
+    console.error('Filter students error:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+};
+
 export const registerStudent = async (req, res) => {
   try {
     const { register_number, name, course, department, academic_year, validity, dob, blood_group, address, email, phone, photo_url } = req.body;
@@ -87,6 +107,26 @@ export const getRepeatOffenders = async (req, res) => {
     res.status(200).json(rows);
   } catch (error) {
     console.error('Fetch repeat offenders error:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+};
+
+export const saveScannedIdCard = async (req, res) => {
+  try {
+    const { register_number, name, branch } = req.body;
+
+    if (!register_number || !name || !branch) {
+      return res.status(400).json({ message: 'Required fields: Register number, name, branch.' });
+    }
+
+    await pool.query(
+      'INSERT INTO scanned_id_cards (register_number, name, branch) VALUES (?, ?, ?)',
+      [register_number, name, branch]
+    );
+
+    res.status(201).json({ message: 'Scanned ID card saved successfully.' });
+  } catch (error) {
+    console.error('Save scanned ID error:', error);
     res.status(500).json({ message: 'Internal server error.' });
   }
 };

@@ -40,7 +40,6 @@ export default function Layout({ children }) {
     // Staff routes
     { path: '/home',           icon: 'space_dashboard', label: 'Dashboard',   roles: ['all'] },
     { path: '/registration',   icon: 'person_add',      label: 'Enrollment',  roles: ['incharge'] },
-    { path: '/remark-scanner', icon: 'qr_code_scanner', label: 'Scanner',     roles: ['incharge'] },
     { path: '/remark',         icon: 'manage_search',   label: 'Search',      roles: ['incharge', 'hod'] },
     { path: '/history',        icon: 'monitoring',      label: 'History',     roles: ['all'] },
 

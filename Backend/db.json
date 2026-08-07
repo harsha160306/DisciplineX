@@ -659,5 +659,6 @@
     "academic_year": "2025-2026",
     "remark_categories": "Late-comer, Non-uniform, Indiscipline, Others",
     "password_policy": "{\"minLength\":6,\"requireSpecial\":false}"
-  }
+  },
+  "scanned_id_cards": []
 }

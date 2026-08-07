@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import api from '../utils/api';
 import { toast } from 'react-hot-toast';
 import { useAppContext } from '../context/AppContext';
@@ -63,7 +63,13 @@ export default function RemarkPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
+  const [filterDept, setFilterDept] = useState('');
+  const [filterYear, setFilterYear] = useState('');
+  const [filteredStudents, setFilteredStudents] = useState([]);
+  const [isFiltering, setIsFiltering] = useState(false);
+  
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAppContext();
   const isHOD = user?.role?.toLowerCase() === 'hod';
   const userDept = user?.department || localStorage.getItem('userDepartment') || '';
@@ -101,13 +107,8 @@ export default function RemarkPage() {
     })();
   }, [isHOD, userDept]);
 
-  const handleSearch = async (e) => {
-    if (e) e.preventDefault();
-    if (!searchQuery.trim()) {
-      toast.error('Please enter a register number or name.');
-      return;
-    }
-
+  const performSearch = async (queryVal) => {
+    if (!queryVal.trim()) return;
     setIsSearching(true);
     setStudent(null);
     setRemarksHistory([]);
@@ -115,10 +116,10 @@ export default function RemarkPage() {
     setCustomRemark('');
     try {
       // API call to fetch student profile
-      const isRegNo = /^\d/.test(searchQuery.trim());
+      const isRegNo = /^\d/.test(queryVal.trim()) || queryVal.toUpperCase().includes('MIC');
       const endpoint = isRegNo
-        ? `/students/register/${searchQuery.trim()}`
-        : `/students/search?name=${encodeURIComponent(searchQuery.trim())}`;
+        ? `/students/register/${queryVal.trim()}`
+        : `/students/search?name=${encodeURIComponent(queryVal.trim())}`;
       
       const response = await api.get(endpoint);
       const resData = response.data.student || response.data.students || response.data;
@@ -143,10 +144,11 @@ export default function RemarkPage() {
         throw new Error('Not found');
       }
     } catch (err) {
+      toast.error('Student not found in database.');
       console.warn('Student not found in backend, searching fallback in mock...');
       const prefix = userDept ? userDept.substring(0, 2).toUpperCase() : 'CS';
       // Online fallback matchers
-      const queryUpper = searchQuery.trim().toUpperCase();
+      const queryUpper = queryVal.trim().toUpperCase();
       if (queryUpper === '2024CS012' || queryUpper === 'RAHUL' || queryUpper === 'RAHUL SHARMA') {
         setStudent({
           id: 1,
@@ -184,7 +186,7 @@ export default function RemarkPage() {
         setStudent({
           id: 99,
           register_number: queryUpper.match(/^\d/) ? queryUpper : `2024${prefix}999`,
-          name: searchQuery,
+          name: queryVal,
           department: userDept || 'CSE',
           academic_year: '4th Year',
           section: 'A',
@@ -201,7 +203,63 @@ export default function RemarkPage() {
     }
   };
 
-  const handleSubmitRemark = async () => {
+  /* ── Auto-trigger search from location query string ── */
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const q = params.get('search');
+    if (q) {
+      setSearchQuery(q);
+      if (isHOD) {
+        setActiveTab('search');
+      }
+      performSearch(q);
+    }
+  }, [location.search, isHOD]);
+
+  const handleSearch = async (e) => {
+    if (e) e.preventDefault();
+    if (!searchQuery.trim()) {
+      toast.error('Please enter a register number or name.');
+      return;
+    }
+    await performSearch(searchQuery);
+  };
+
+  const handleFilter = async () => {
+    const dept = userDept || 'CSE'; // fallback for demo
+    if (!filterYear) {
+      toast.error('Please select an Academic Year');
+      return;
+    }
+    setIsFiltering(true);
+    setStudent(null);
+    setFilteredStudents([]);
+    try {
+      const response = await api.get(`/students/filter?department=${encodeURIComponent(dept)}&academic_year=${encodeURIComponent(filterYear)}`);
+      if (response.data && response.data.length > 0) {
+        setFilteredStudents(response.data);
+        toast.success(`Found ${response.data.length} students`);
+      } else {
+        toast.error('No students found for this criteria');
+      }
+    } catch (err) {
+      toast.error('Failed to filter students');
+    } finally {
+      setIsFiltering(false);
+    }
+  };
+
+  const selectStudentFromFilter = async (selectedStudent) => {
+    setStudent(selectedStudent);
+    try {
+      const remarksRes = await api.get(`/remarks/student/${selectedStudent.id}`);
+      setRemarksHistory(remarksRes.data.remarks || remarksRes.data || []);
+    } catch (err) {
+      console.error('Failed to fetch remarks', err);
+    }
+  };
+
+  const handleRemarkSubmit = async () => {
     if (!student) return;
     if (!selectedRemark) {
       toast.error('Please select a remark.');
@@ -553,32 +611,95 @@ export default function RemarkPage() {
                   </div>
                 </div>
                 <div className="p-6">
-                  <form id="search-form" onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-3">
-                    <div className="relative flex-1">
-                      <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-[20px] pointer-events-none">search</span>
-                      <input
-                        ref={searchInputRef}
-                        className="w-full bg-surface border border-outline-variant/30 rounded-xl py-3.5 pl-12 pr-4 font-body text-on-surface text-[14px] placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none transition-all"
-                        placeholder="Search by Register Number or Student Name…"
-                        type="text"
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                      />
+                  <form id="search-form" onSubmit={(e) => { e.preventDefault(); if(searchQuery) handleSearch(e); else handleFilter(); }} className="flex flex-col gap-4">
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="relative w-full sm:w-72">
+                        <select
+                          className="w-full bg-surface border border-outline-variant/30 rounded-xl py-3 px-4 font-body text-on-surface text-[14px] focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none transition-all appearance-none"
+                          value={filterYear}
+                          onChange={(e) => setFilterYear(e.target.value)}
+                        >
+                          <option value="">Select Academic Year</option>
+                          <option value="1st Year">1st Year</option>
+                          <option value="2nd Year">2nd Year</option>
+                          <option value="3rd Year">3rd Year</option>
+                          <option value="4th Year">4th Year</option>
+                        </select>
+                        <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-outline-variant">expand_more</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={handleFilter}
+                        disabled={isFiltering}
+                        className="bg-primary text-on-primary rounded-xl px-6 py-3 font-label font-semibold text-[14px] hover:bg-primary/90 transition-all flex items-center justify-center gap-2 shadow-sm w-full sm:w-auto shrink-0"
+                      >
+                        {isFiltering ? (
+                          <><span className="material-symbols-outlined animate-spin text-[18px]">sync</span> Filtering…</>
+                        ) : (
+                          <><span className="material-symbols-outlined text-[18px]">filter_alt</span> Filter Students</>
+                        )}
+                      </button>
                     </div>
-                    <button
-                      type="submit"
-                      disabled={isSearching}
-                      className="brand-gradient text-white rounded-xl px-8 py-3.5 font-label font-semibold text-[14px] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-brand-sm w-full sm:w-auto shrink-0 active:scale-[.97]"
-                    >
-                      {isSearching ? (
-                        <><span className="material-symbols-outlined animate-spin text-[18px]">sync</span> Searching…</>
-                      ) : (
-                        <><span className="material-symbols-outlined text-[18px]">manage_search</span> Search</>
-                      )}
-                    </button>
+
+                    <div className="relative flex items-center py-1">
+                      <div className="flex-grow border-t border-outline-variant/20"></div>
+                      <span className="flex-shrink-0 mx-4 text-on-surface-variant text-[11px] font-label uppercase tracking-wider">or search directly</span>
+                      <div className="flex-grow border-t border-outline-variant/20"></div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <div className="relative w-full sm:max-w-md">
+                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline text-[20px] pointer-events-none">search</span>
+                        <input
+                          ref={searchInputRef}
+                          className="w-full bg-surface border border-outline-variant/30 rounded-xl py-3 pl-12 pr-4 font-body text-on-surface text-[14px] placeholder:text-outline focus:border-primary focus:ring-2 focus:ring-primary/15 outline-none transition-all"
+                          placeholder="Search by Register Number or Student Name…"
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                        />
+                      </div>
+                      <button
+                        type="submit"
+                        disabled={isSearching}
+                        className="brand-gradient text-white rounded-xl px-8 py-3 font-label font-semibold text-[14px] hover:opacity-90 transition-all flex items-center justify-center gap-2 shadow-brand-sm w-full sm:w-auto shrink-0 active:scale-[.97]"
+                      >
+                        {isSearching ? (
+                          <><span className="material-symbols-outlined animate-spin text-[18px]">sync</span> Searching…</>
+                        ) : (
+                          <><span className="material-symbols-outlined text-[18px]">manage_search</span> Search</>
+                        )}
+                      </button>
+                    </div>
                   </form>
                 </div>
               </div>
+
+              {/* Filtered Students List */}
+              {filteredStudents.length > 0 && !student && (
+                <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-card overflow-hidden animate-fade-in p-6">
+                  <h3 className="font-display font-bold text-base text-on-surface mb-4">Select Student</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {filteredStudents.map(fs => (
+                      <div 
+                        key={fs.id} 
+                        onClick={() => selectStudentFromFilter(fs)}
+                        className="flex items-center gap-4 p-4 border border-outline-variant/30 rounded-xl hover:border-primary/50 hover:bg-primary-container/10 cursor-pointer transition-all"
+                      >
+                        <div className="w-12 h-12 rounded-full bg-primary-container text-on-primary-container flex items-center justify-center font-bold text-lg shrink-0">
+                          {initials(fs.name)}
+                        </div>
+                        <div className="overflow-hidden">
+                          <div className="font-semibold text-on-surface text-sm truncate">{fs.name}</div>
+                          <div className="font-mono text-xs text-on-surface-variant truncate mt-0.5">{fs.register_number}</div>
+                          <div className="text-[10px] font-label text-on-surface-variant mt-1">{fs.department} • {fs.academic_year}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Student Profile Card & Remarks Submission / Remark History */}
               {student ? (
@@ -691,7 +812,7 @@ export default function RemarkPage() {
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2 border-t border-outline-variant/10">
                           <button
                             className={`flex-1 sm:flex-none sm:ml-auto brand-gradient text-white rounded-xl px-10 py-3.5 font-label font-bold text-[14px] shadow-brand-sm hover:shadow-brand hover:opacity-95 transition-all active:scale-[0.98] flex items-center justify-center gap-2.5 ${isSubmitting ? 'opacity-70 cursor-wait' : ''}`}
-                            onClick={handleSubmitRemark}
+                            onClick={handleRemarkSubmit}
                             disabled={isSubmitting}
                           >
                             {isSubmitting ? (
@@ -705,10 +826,11 @@ export default function RemarkPage() {
                     </div>
                   )}
 
-                  {/* Complete Remark History Table */}
-                  <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-card overflow-hidden mt-6">
-                    <div className="px-6 py-5 border-b border-outline-variant/10">
-                      <h3 className="font-display font-bold text-[15px] text-on-surface flex items-center gap-2">
+                  {/* Complete Remark History Table (HOD Only) */}
+                  {isHOD && (
+                    <div className="bg-surface-container-lowest rounded-2xl border border-outline-variant/15 shadow-card overflow-hidden mt-6">
+                      <div className="px-6 py-5 border-b border-outline-variant/10">
+                        <h3 className="font-display font-bold text-[15px] text-on-surface flex items-center gap-2">
                         <span className="material-symbols-outlined text-rose-500 text-[18px]">history</span>
                         Complete Remark History
                       </h3>
@@ -754,6 +876,7 @@ export default function RemarkPage() {
                       )}
                     </div>
                   </div>
+                  )}
                 </div>
               ) : (
                 /* Search Empty State */

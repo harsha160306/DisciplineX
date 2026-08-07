@@ -55,6 +55,7 @@ if (!fs.existsSync(DB_FILE)) {
     students: SEED_STUDENTS, 
     remarks: [],
     departments: SEED_DEPARTMENTS,
+    scanned_id_cards: [],
     activity_logs: [
       { id: 1, user_name: 'System Admin', user_role: 'Admin', action: 'System Initialized', date: '19-Jul-2026', time: '08:30 AM' }
     ],
@@ -89,6 +90,11 @@ if (!fs.existsSync(DB_FILE)) {
     // Migrate departments list
     if (!existing.departments) {
       existing.departments = SEED_DEPARTMENTS;
+      changed = true;
+    }
+
+    if (!existing.scanned_id_cards) {
+      existing.scanned_id_cards = [];
       changed = true;
     }
 
@@ -310,6 +316,18 @@ const mockPool = {
       );
       return [found];
     }
+    if (cleanSql.includes('from students where register_number = ?') && !cleanSql.includes('or name like')) {
+      const [regNum] = params;
+      const found = data.students.filter(s => 
+        (s.register_number || s.registerNumber || '').toLowerCase() === regNum.toLowerCase()
+      );
+      return [found];
+    }
+    if (cleanSql.includes('from students where department = ? and academic_year = ?')) {
+      const [department, academicYear] = params;
+      const found = data.students.filter(s => s.department === department && s.academic_year === academicYear);
+      return [found];
+    }
     if (cleanSql.startsWith('update students set')) {
       const id = params[params.length - 1];
       const idx = data.students.findIndex(s => s.id === Number(id));
@@ -339,6 +357,8 @@ const mockPool = {
       return [{ affectedRows: 1 }];
     }
 
+
+
     // 14. REMARKS CRUD MOCKS
     if (cleanSql.includes('select') && cleanSql.includes('from remarks') && !cleanSql.includes('join students')) {
       return [data.remarks];
@@ -362,6 +382,21 @@ const mockPool = {
       });
       return [results.sort((a,b) => new Date(b.created_at) - new Date(a.created_at))];
     }
+    if (cleanSql.startsWith('insert into remarks')) {
+      const [student_id, remark_text, recorded_by] = params;
+      const newRemark = {
+        id: Math.max(...data.remarks.map(r => r.id), 0) + 1,
+        student_id,
+        remark_text,
+        remark: remark_text,
+        recorded_by,
+        created_at: new Date().toISOString()
+      };
+      data.remarks.push(newRemark);
+      writeData(data);
+      return [{ insertId: newRemark.id, affectedRows: 1 }];
+    }
+    
     if (cleanSql.startsWith('delete from remarks')) {
       const id = params[0];
       data.remarks = data.remarks.filter(r => r.id !== Number(id));

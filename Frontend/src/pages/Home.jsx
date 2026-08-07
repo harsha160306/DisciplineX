@@ -67,7 +67,7 @@ const initials = (name = '') => name.trim().split(/\s+/).map(n => n[0]).join('')
 
 /* ─── Incharge cards (for non-HOD) ────────────────────────────── */
 const INCHARGE_CARDS = [
-  { to: '/remark-scanner', icon: 'qr_code_scanner', title: 'Remark Scanner', description: 'Scan a student\'s barcode to record a disciplinary remark instantly.', cta: 'Open Scanner', grad: 'from-indigo-500 to-indigo-700' },
+  { to: '/remark',         icon: 'manage_search',    title: 'Search Students', description: 'Search and filter students by department and year to record remarks.', cta: 'Search Now', grad: 'from-indigo-500 to-indigo-700' },
   { to: '/history',        icon: 'monitoring',       title: 'Remarks History', description: "View all the disciplinary remarks you've recorded with detailed history.", cta: 'View History', grad: 'from-teal-500 to-teal-700' },
   { to: '/registration',   icon: 'person_add',       title: 'Enroll Student', description: 'Register a new student by filling in their ID card and academic details.', cta: 'Enroll Now', grad: 'from-emerald-500 to-emerald-700' },
 ];

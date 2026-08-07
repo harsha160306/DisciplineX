@@ -20,11 +20,6 @@ export default function Registration() {
   const [photoUrl, setPhotoUrl] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // OCR State
-  const [isOcrProcessing, setIsOcrProcessing] = useState(false);
-  const [ocrProgressText, setOcrProgressText] = useState('');
-  const [idCardImagePreview, setIdCardImagePreview] = useState('');
-
   // Preview state (initial mock values)
   const [previewData, setPreviewData] = useState({
     name: 'Eleanor Vance',
@@ -92,104 +87,6 @@ export default function Registration() {
         setPhotoUrl(reader.result);
       };
       reader.readAsDataURL(file);
-    }
-  };
-
-  const handleIdCardUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (!file.type.match('image.*')) {
-        toast.error('Please upload a valid JPG, JPEG, or PNG image.');
-        return;
-      }
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('File size exceeds 10MB limit.');
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setIdCardImagePreview(reader.result);
-        startOcrProcessing(file);
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const handleCaptureIdCard = () => {
-    const el = document.getElementById('id-card-capture');
-    if (el) el.click();
-  };
-
-  const startOcrProcessing = async (imageFile) => {
-    setIsOcrProcessing(true);
-    setOcrProgressText('Processing ID card...');
-
-    try {
-      // Dynamic import — Tesseract is only loaded when the user uploads a card
-      const Tesseract = (await import('tesseract.js')).default;
-      const { data: { text } } = await Tesseract.recognize(
-        imageFile,
-        'eng',
-        {
-          logger: m => {
-            if (m.status === 'recognizing text') {
-              setOcrProgressText(`Reading student information... (${Math.round(m.progress * 100)}%)`);
-            }
-          }
-        }
-      );
-      parseOcrText(text);
-      setIsOcrProcessing(false);
-      setOcrProgressText('');
-      toast.success('Student information extracted successfully.');
-    } catch (err) {
-      console.error('OCR Error:', err);
-      setIsOcrProcessing(false);
-      setOcrProgressText('');
-      toast.error('Unable to read student information from this ID card. Please upload a clearer image or enter the details manually.');
-    }
-  };
-
-  const parseOcrText = (text) => {
-    const nameMatch = text.match(/(?:Name|Student Name)\s*[:\-]?\s*([A-Za-z\s]+)/i);
-    const regNoMatch = text.match(/(?:Register Number|Reg No|Registration Number|Roll No)\s*[:\-]?\s*([A-Za-z0-9-]+)/i);
-    const deptMatch = text.match(/(?:Department|Branch)\s*[:\-]?\s*([A-Za-z\s]+)/i);
-    const yearMatch = text.match(/(?:Academic Year|Year)\s*[:\-]?\s*([\d]{4}\s*-\s*[\d]{4})/i);
-
-    let missingFields = false;
-
-    if (nameMatch && nameMatch[1].trim()) {
-      setName(nameMatch[1].trim());
-    } else {
-      missingFields = true;
-    }
-
-    if (regNoMatch && regNoMatch[1].trim()) {
-      setRegisterNumber(regNoMatch[1].trim());
-    } else {
-      missingFields = true;
-    }
-
-    if (deptMatch && deptMatch[1].trim()) {
-      const dept = deptMatch[1].trim();
-      if (dept.toLowerCase().includes('computer science')) {
-        setBranch('CSE');
-      } else {
-        setBranch(dept);
-      }
-    } else {
-      missingFields = true;
-    }
-
-    if (yearMatch && yearMatch[1].trim()) {
-      setAcademicYear(yearMatch[1].trim());
-    } else {
-      missingFields = true;
-    }
-
-    if (missingFields) {
-      toast.error('Some student information could not be detected. Please enter the missing information manually.');
     }
   };
 
@@ -319,79 +216,6 @@ export default function Registration() {
           </div>
 
           <form onSubmit={handleGenerateAndSave} className="bg-surface-container-lowest p-6 md:p-8 rounded-2xl shadow-sm border border-outline-variant/15 space-y-6">
-            
-            {/* OCR ID Card Import Section */}
-            <div>
-              <h2 className="font-label text-base font-bold text-on-surface uppercase tracking-wider mb-4 border-b border-outline-variant/15 pb-2">Import from Existing ID Card</h2>
-              
-              <div className="flex flex-col md:flex-row gap-4 items-start">
-                <div className="flex-1 w-full">
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <button 
-                      type="button"
-                      onClick={() => document.getElementById('id-card-upload').click()}
-                      className="flex-1 bg-secondary-container text-on-secondary-container hover:bg-secondary-container/80 py-3 rounded-xl font-label font-bold text-sm transition-colors flex items-center justify-center gap-2"
-                    >
-                      <span className="material-symbols-outlined">upload_file</span>
-                      Upload ID Card Image
-                    </button>
-                    <input 
-                      type="file" 
-                      id="id-card-upload" 
-                      accept=".jpg, .jpeg, .png" 
-                      className="hidden" 
-                      onChange={handleIdCardUpload}
-                    />
-
-                    <button 
-                      type="button"
-                      onClick={handleCaptureIdCard}
-                      className="flex-1 bg-surface border border-outline text-on-surface hover:bg-surface-container py-3 rounded-xl font-label font-bold text-sm transition-colors flex items-center justify-center gap-2"
-                    >
-                      <span className="material-symbols-outlined">photo_camera</span>
-                      Capture ID Card
-                    </button>
-                    <input 
-                      type="file" 
-                      id="id-card-capture" 
-                      accept="image/*" 
-                      capture="environment"
-                      className="hidden" 
-                      onChange={handleIdCardUpload}
-                    />
-                  </div>
-                  
-                  {isOcrProcessing && (
-                    <div className="mt-4 p-4 bg-primary-container text-on-primary-container rounded-xl flex items-center gap-3 animate-pulse">
-                      <span className="material-symbols-outlined animate-spin">sync</span>
-                      <span className="font-body text-sm font-semibold">{ocrProgressText}</span>
-                    </div>
-                  )}
-                </div>
-
-                {idCardImagePreview && (
-                  <div className="w-full md:w-32 h-24 rounded-xl border border-outline-variant overflow-hidden relative shrink-0">
-                    <img src={idCardImagePreview} className="w-full h-full object-cover" alt="ID Card Preview" />
-                    <button 
-                      type="button"
-                      onClick={() => setIdCardImagePreview('')}
-                      className="absolute top-1 right-1 bg-black/60 text-white rounded-full p-1 hover:bg-black/80 transition-colors"
-                    >
-                      <span className="material-symbols-outlined text-[14px]">close</span>
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="relative py-4">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-outline-variant/30"></div>
-              </div>
-              <div className="relative flex justify-center">
-                <span className="bg-surface-container-lowest px-4 text-xs font-label uppercase tracking-widest text-on-surface-variant font-bold">OR Manual Enrollment</span>
-              </div>
-            </div>
 
             {/* Photo Upload */}
             <div className="col-span-full">
@@ -624,139 +448,112 @@ export default function Registration() {
           </form>
         </div>
 
-        {/* ID Cards Preview Area (Fitted Side-by-Side) */}
+        {/* Profile Preview Area */}
         <div className="xl:col-span-5 flex flex-col items-center xl:items-start pt-4 xl:pt-0 w-full">
           <div className="sticky top-24 w-full flex flex-col items-center xl:items-start">
             <h3 className="font-headline text-xl text-on-surface mb-6 flex items-center gap-2 self-start xl:self-auto font-bold">
-              <span className="material-symbols-outlined text-tertiary">badge</span>
-              Card Preview (Front & Back)
+              <span className="material-symbols-outlined text-tertiary">person</span>
+              Profile Preview
             </h3>
 
-            {/* Front & Back Cards printable container */}
-            <div id="printable-container" className="flex flex-col lg:flex-row xl:flex-col gap-6 justify-center w-full max-w-sm lg:max-w-none xl:max-w-sm mx-auto xl:mx-0">
+            <div className="w-full bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden animate-fade-in relative">
+              {/* Purple Header Banner */}
+              <div className="h-28 bg-[#6c2bd9] relative overflow-hidden">
+                <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "14px 14px" }}></div>
+              </div>
               
-              {/* 1. FRONT SIDE CARD */}
-              <div id="printable-id-card-front" className="w-[320px] sm:w-[330px] h-[500px] bg-surface-container-lowest rounded-2xl shadow-md border border-outline-variant/20 overflow-hidden relative flex flex-col shrink-0 animate-fade-in">
-                {/* Header */}
-                <div className="bg-primary px-5 py-4 flex items-center gap-4 relative overflow-hidden">
-                  <div className="absolute inset-0 opacity-15" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "12px 12px" }}></div>
-                  <img alt="MIC College Logo" className="w-10 h-10 object-contain relative z-10 bg-white rounded p-1" src="/mic-logo.svg"/>
-                  <div className="relative z-10 text-white">
-                    <h4 className="font-display font-bold text-base leading-tight tracking-wide">M.I.C.</h4>
-                    <p className="text-[9px] uppercase tracking-widest text-primary-fixed opacity-90">Modern Institute College</p>
-                  </div>
-                  <div className="absolute top-2 right-4 text-[9px] text-white/40 font-bold tracking-widest uppercase">Front</div>
-                </div>
-
-                {/* Card Body */}
-                <div className="flex-1 px-5 py-4 flex flex-col items-center justify-between bg-gradient-to-b from-surface-container-lowest to-surface">
-                  {/* Photo */}
-                  <div className="w-28 h-36 bg-surface-container-high rounded-xl shadow-sm border-2 border-surface-container-lowest relative overflow-hidden flex items-center justify-center shrink-0">
-                    {previewData.photoUrl ? (
-                      <img className="absolute inset-0 w-full h-full object-cover" src={previewData.photoUrl} alt="Student Portrait" />
-                    ) : (
-                      <span className="material-symbols-outlined text-outline-variant text-4xl relative z-10">person</span>
-                    )}
-                  </div>
-
-                  {/* Details */}
-                  <div className="text-center w-full space-y-2 mt-2">
-                    <div>
-                      <h2 className="font-headline font-bold text-lg text-on-surface truncate">{previewData.name}</h2>
-                      <p className="text-primary font-label text-xs font-bold uppercase tracking-wider mt-0.5 truncate">
-                        {previewData.course} - {previewData.branch}
-                      </p>
+              {/* Profile Header section (Avatar + Name) */}
+              <div className="px-6 pb-5">
+                <div className="flex flex-col sm:flex-row sm:items-end gap-5 -mt-12 mb-5">
+                  {/* Avatar */}
+                  <div className="relative">
+                    <div className="w-24 h-24 bg-surface-container-high rounded-2xl shadow-sm border-[4px] border-surface-container-lowest relative overflow-hidden flex items-center justify-center shrink-0 z-10">
+                      {previewData.photoUrl ? (
+                        <img className="absolute inset-0 w-full h-full object-cover" src={previewData.photoUrl} alt="Student Portrait" />
+                      ) : (
+                        <span className="material-symbols-outlined text-outline-variant text-4xl">person</span>
+                      )}
                     </div>
-                    <div className="w-10 h-px bg-outline-variant/30 mx-auto"></div>
-                    <div className="grid grid-cols-2 gap-x-2 gap-y-1 text-left w-full px-2 text-xs">
-                      <div className="font-label text-on-surface-variant uppercase tracking-wider text-[9px]">Reg No</div>
-                      <div className="font-body font-bold text-on-surface text-right truncate">{previewData.registerNumber}</div>
-                      
-                      <div className="font-label text-on-surface-variant uppercase tracking-wider text-[9px]">Validity</div>
-                      <div className="font-body font-bold text-on-surface text-right text-[11px] truncate">{previewData.validity}</div>
+                    {/* Status badge */}
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-white rounded-full flex items-center justify-center shadow-sm z-20">
+                      <span className="material-symbols-outlined text-emerald-500 text-[16px]" style={{ fontVariationSettings: "'FILL' 1" }}>check_circle</span>
                     </div>
                   </div>
+                  
+                  {/* Name and Reg No */}
+                  <div className="flex-1 pb-1">
+                    <div className="flex items-center gap-3">
+                      <h2 className="font-display font-bold text-2xl text-on-surface truncate">{previewData.name || 'Student Name'}</h2>
+                      <span className="px-2 py-0.5 bg-blue-50 text-blue-600 font-mono text-[10px] font-bold rounded-md uppercase tracking-wider hidden sm:block">
+                        {previewData.registerNumber || 'ID PENDING'}
+                      </span>
+                    </div>
+                    <p className="font-label text-[11px] font-bold text-on-surface-variant uppercase tracking-widest mt-1">
+                      Student Profile
+                    </p>
+                  </div>
                 </div>
 
-                {/* Footer Barcode */}
-                <div className="bg-surface-container px-6 py-3 border-t border-outline-variant/20 flex flex-col items-center justify-center shrink-0">
-                  <div className="w-48 h-8 bg-white flex items-center justify-center px-2 py-1 rounded">
-                    <svg ref={barcodeRef} className="w-full h-full"></svg>
+                {/* Info Cards Grid */}
+                <div className="grid grid-cols-2 gap-3 mt-2">
+                  <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-3 flex flex-col justify-center">
+                    <div className="flex items-center gap-1.5 text-primary mb-1.5">
+                      <span className="material-symbols-outlined text-[14px]">badge</span>
+                      <span className="font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Reg. No.</span>
+                    </div>
+                    <span className="font-body font-bold text-sm text-on-surface truncate">{previewData.registerNumber || '-'}</span>
                   </div>
-                  <span className="font-body text-[9px] text-on-surface-variant mt-1 tracking-widest uppercase font-semibold">{previewData.registerNumber}</span>
+                  
+                  <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-3 flex flex-col justify-center">
+                    <div className="flex items-center gap-1.5 text-primary mb-1.5">
+                      <span className="material-symbols-outlined text-[14px]">school</span>
+                      <span className="font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Department</span>
+                    </div>
+                    <span className="font-body font-bold text-sm text-on-surface truncate">
+                      {previewData.course ? `${previewData.course} - ${previewData.branch}` : '-'}
+                    </span>
+                  </div>
+
+                  <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-3 flex flex-col justify-center">
+                    <div className="flex items-center gap-1.5 text-primary mb-1.5">
+                      <span className="material-symbols-outlined text-[14px]">calendar_month</span>
+                      <span className="font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Academic Year</span>
+                    </div>
+                    <span className="font-body font-bold text-sm text-on-surface truncate">{previewData.academicYear || '-'}</span>
+                  </div>
+
+                  <div className="bg-surface-container-lowest border border-outline-variant/30 rounded-xl p-3 flex flex-col justify-center">
+                    <div className="flex items-center gap-1.5 text-primary mb-1.5">
+                      <span className="material-symbols-outlined text-[14px]">verified</span>
+                      <span className="font-label text-[10px] font-bold uppercase tracking-wider text-on-surface-variant">Validity</span>
+                    </div>
+                    <span className="font-body font-bold text-sm text-on-surface truncate">{previewData.validity || '-'}</span>
+                  </div>
                 </div>
+                
+                {/* Secondary Info Row */}
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <div className="bg-surface-container-low px-3 py-2 rounded-lg text-xs font-medium text-on-surface-variant flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[14px]">cake</span>
+                    {previewData.dob || 'DOB'}
+                  </div>
+                  <div className="bg-surface-container-low px-3 py-2 rounded-lg text-xs font-medium text-on-surface-variant flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[14px]">bloodtype</span>
+                    {previewData.bloodGroup || 'Blood Group'}
+                  </div>
+                  <div className="bg-surface-container-low px-3 py-2 rounded-lg text-xs font-medium text-on-surface-variant flex items-center gap-2">
+                    <span className="material-symbols-outlined text-[14px]">call</span>
+                    {previewData.phone || 'Phone'}
+                  </div>
+                </div>
+                
+                {previewData.address && (
+                  <div className="bg-surface-container-low px-3 py-2 rounded-lg text-xs font-medium text-on-surface-variant flex items-start gap-2 mt-2 w-full">
+                    <span className="material-symbols-outlined text-[14px] mt-0.5">home</span>
+                    <span className="flex-1 leading-relaxed">{previewData.address}</span>
+                  </div>
+                )}
               </div>
-
-              {/* 2. BACK SIDE CARD */}
-              <div id="printable-id-card-back" className="w-[320px] sm:w-[330px] h-[500px] bg-surface-container-lowest rounded-2xl shadow-md border border-outline-variant/20 overflow-hidden relative flex flex-col shrink-0 animate-fade-in">
-                {/* Header */}
-                <div className="bg-primary px-5 py-4 flex items-center justify-between relative overflow-hidden shrink-0">
-                  <div className="absolute inset-0 opacity-15" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "12px 12px" }}></div>
-                  <div className="relative z-10 text-white flex items-center gap-2">
-                    <span className="material-symbols-outlined text-lg">security</span>
-                    <span className="font-display font-bold text-sm tracking-wider uppercase">Institutional ID Card</span>
-                  </div>
-                  <span className="text-[9px] text-white/40 font-bold tracking-widest uppercase relative z-10">Back</span>
-                </div>
-
-                {/* Backside Details List */}
-                <div className="flex-1 px-6 py-5 flex flex-col justify-between bg-gradient-to-b from-surface-container-lowest to-surface">
-                  <div className="space-y-4">
-                    <h3 className="font-display text-xs font-semibold text-primary uppercase tracking-widest border-b border-outline-variant/20 pb-1">Student Particulars</h3>
-                    
-                    <div className="space-y-2.5 text-xs">
-                      <div className="flex justify-between items-start border-b border-outline-variant/10 pb-1">
-                        <span className="font-label text-on-surface-variant uppercase text-[9px] tracking-wider">DOB</span>
-                        <span className="font-body font-bold text-on-surface">{previewData.dob || '-'}</span>
-                      </div>
-                      <div className="flex justify-between items-start border-b border-outline-variant/10 pb-1">
-                        <span className="font-label text-on-surface-variant uppercase text-[9px] tracking-wider">Blood Group</span>
-                        <span className="font-body font-bold text-on-surface">{previewData.bloodGroup}</span>
-                      </div>
-                      <div className="flex justify-between items-start border-b border-outline-variant/10 pb-1">
-                        <span className="font-label text-on-surface-variant uppercase text-[9px] tracking-wider">Phone</span>
-                        <span className="font-body font-bold text-on-surface">{previewData.phone || '-'}</span>
-                      </div>
-                      <div className="flex flex-col gap-1">
-                        <span className="font-label text-on-surface-variant uppercase text-[9px] tracking-wider">Residential Address</span>
-                        <span className="font-body text-[11px] text-on-surface leading-relaxed max-h-[60px] overflow-hidden">{previewData.address || '-'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Institutional Notes */}
-                  <div className="space-y-3 mt-2">
-                    <div className="p-3 bg-surface-container border border-outline-variant/10 rounded-xl text-[10px] text-on-surface-variant leading-relaxed font-body">
-                      <strong>Note:</strong> This card is property of Modern Institute College. If found, please return to the Registrar's Office.
-                    </div>
-                    <div className="flex justify-between items-end pt-1 text-[10px]">
-                      <div className="flex flex-col items-center">
-                        <div className="w-20 border-b border-on-surface/50 h-5"></div>
-                        <span className="text-[8px] text-outline font-semibold uppercase tracking-wider mt-1">Holder's Sign</span>
-                      </div>
-                      <div className="flex flex-col items-center">
-                        <div className="w-20 border-b border-on-surface/50 h-5"></div>
-                        <span className="text-[8px] text-outline font-semibold uppercase tracking-wider mt-1">Registrar</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer Brand Logo strip */}
-                <div className="bg-surface-container py-3 border-t border-outline-variant/20 flex items-center justify-center shrink-0">
-                  <span className="text-[9px] font-label font-bold text-on-surface-variant tracking-wider uppercase">Modern Institute College</span>
-                </div>
-              </div>
-
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-4 justify-center w-full max-w-sm mx-auto xl:mx-0">
-              <button 
-                onClick={handlePrint}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-on-primary rounded-xl font-label text-sm font-semibold transition-all shadow-md active:scale-95"
-              >
-                <span className="material-symbols-outlined text-sm">print</span> Print Front & Back ID Card
-              </button>
             </div>
           </div>
         </div>
