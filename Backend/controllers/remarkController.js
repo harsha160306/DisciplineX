@@ -1,5 +1,23 @@
 import pool from '../db.js';
 
+export const getStudentRemarks = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const [remarks] = await pool.query(
+      `SELECT r.*, u.name as incharge_name 
+       FROM remarks r 
+       LEFT JOIN users u ON r.recorded_by = u.id 
+       WHERE r.student_id = ? 
+       ORDER BY r.created_at DESC`,
+      [studentId]
+    );
+    res.status(200).json({ remarks });
+  } catch (error) {
+    console.error('Fetch student remarks error:', error);
+    res.status(500).json({ message: 'Internal server error.' });
+  }
+};
+
 export const recordRemark = async (req, res) => {
   try {
     const { student_id, register_number, remark_text } = req.body;
