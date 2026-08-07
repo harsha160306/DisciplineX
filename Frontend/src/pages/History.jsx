@@ -383,15 +383,14 @@ export default function History() {
               </span>
             </div>
             <p className="text-sm text-on-surface-variant font-body mb-5 max-w-2xl">
-              Generate filtered reports by <strong>Academic Year</strong>, <strong>Department</strong>, <strong>Semester</strong>, or <strong>Month</strong>.
+              Generate filtered reports by <strong>Academic Year</strong> or <strong>Month</strong>.
               Use the filters below and export to <strong>Word</strong>, <strong>PDF</strong>, or <strong>Excel</strong>.
             </p>
 
             {/* Filter shortcuts */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+            <div className="grid grid-cols-2 gap-3 mb-5">
               {[
                 { icon: 'calendar_today', label: 'By Academic Year', color: 'indigo', filter: 'year' },
-                { icon: 'school',         label: 'By Semester',      color: 'teal',   filter: 'semester' },
                 { icon: 'date_range',     label: 'By Month',         color: 'amber',  filter: 'month' },
               ].map(f => (
                 <div key={f.label}
@@ -453,24 +452,6 @@ export default function History() {
                 <option value="2nd Year">2nd Year</option>
                 <option value="3rd Year">3rd Year</option>
                 <option value="4th Year">4th Year</option>
-              </select>
-            </div>
-            <div className="flex-1 w-full">
-              <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Semester</label>
-              <select 
-                className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all outline-none appearance-none"
-                value={apiFilters.semester}
-                onChange={(e) => setApiFilters({...apiFilters, semester: e.target.value})}
-              >
-                <option value="">All Semesters</option>
-                <option value="1st">1st Semester</option>
-                <option value="2nd">2nd Semester</option>
-                <option value="3rd">3rd Semester</option>
-                <option value="4th">4th Semester</option>
-                <option value="5th">5th Semester</option>
-                <option value="6th">6th Semester</option>
-                <option value="7th">7th Semester</option>
-                <option value="8th">8th Semester</option>
               </select>
             </div>
           </div>
