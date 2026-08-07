@@ -273,7 +273,7 @@ export default function Registration() {
             </p>
           </div>
 
-          <form onSubmit={handleGenerateAndSave} className="premium-card p-6 md:p-8 space-y-6">
+          <form onSubmit={handleGenerateAndSave} className="bg-surface-container-lowest p-6 md:p-8 rounded-2xl shadow-sm border border-outline-variant/15 space-y-6">
 
             {/* Photo Upload */}
             <div className="col-span-full">
@@ -514,7 +514,7 @@ export default function Registration() {
               Profile Preview
             </h3>
 
-            <div className="w-full premium-card overflow-hidden animate-fade-in relative">
+            <div className="w-full bg-surface-container-lowest rounded-2xl shadow-sm border border-outline-variant/30 overflow-hidden animate-fade-in relative">
               {/* Purple Header Banner */}
               <div className="h-28 bg-[#6c2bd9] relative overflow-hidden">
                 <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "14px 14px" }}></div>

@@ -388,7 +388,7 @@ export default function RemarkPage() {
               {/* Row 1: Recent Remarks + Repeat Offenders */}
               <div className="grid lg:grid-cols-3 gap-5">
                 {/* Recent Remarks Table */}
-                <div className="lg:col-span-2 bg-surface-container-lowest rounded-3xl p-6 premium-card flex flex-col">
+                <div className="lg:col-span-2 bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 flex flex-col">
                   <div className="flex items-center justify-between mb-5">
                     <h3 className="font-display font-bold text-base text-on-surface flex items-center gap-2">
                       <span className="material-symbols-outlined text-rose-500 text-[20px]">history</span>
@@ -439,7 +439,7 @@ export default function RemarkPage() {
                 </div>
 
                 {/* Repeat Offenders */}
-                <div className="bg-surface-container-lowest rounded-3xl p-6 premium-card flex flex-col">
+                <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 flex flex-col">
                   <h3 className="font-display font-bold text-base text-on-surface flex items-center gap-2 mb-5">
                     <span className="material-symbols-outlined text-amber-500 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>warning</span>
                     Students with Multiple Remarks
@@ -481,7 +481,7 @@ export default function RemarkPage() {
               <div className={`grid ${isHOD ? 'lg:grid-cols-2' : 'lg:grid-cols-3'} gap-5`}>
                 {/* Student Enrollment Statistics */}
                 {!isHOD && (
-                  <div className="bg-surface-container-lowest rounded-3xl p-6 premium-card flex flex-col">
+                <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 flex flex-col">
                   <h3 className="font-display font-bold text-base text-on-surface flex items-center gap-2 mb-5">
                     <span className="material-symbols-outlined text-blue-500 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>person_add</span>
                     Student Enrollment
@@ -517,7 +517,7 @@ export default function RemarkPage() {
                 )}
 
                 {/* Discipline Incharge Table */}
-                <div className="bg-surface-container-lowest rounded-3xl p-6 premium-card flex flex-col">
+                <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 flex flex-col">
                   <div className="flex items-center justify-between mb-5">
                     <h3 className="font-display font-bold text-base text-on-surface flex items-center gap-2">
                       <span className="material-symbols-outlined text-violet-500 text-[20px]">badge</span>
@@ -559,7 +559,7 @@ export default function RemarkPage() {
                 </div>
 
                 {/* Notifications Feed */}
-                <div className="bg-surface-container-lowest rounded-3xl p-6 premium-card flex flex-col">
+                <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 flex flex-col">
                   <h3 className="font-display font-bold text-base text-on-surface flex items-center gap-2 mb-5">
                     <span className="material-symbols-outlined text-emerald-500 text-[20px]" style={{ fontVariationSettings: "'FILL' 1" }}>notifications_active</span>
                     Recent Activity

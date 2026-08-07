@@ -371,7 +371,7 @@ export default function History() {
 
         {/* ── History Module & Reports (HOD only) ── */}
         {isHOD && (
-          <div className="bg-surface-container-lowest rounded-3xl p-6 premium-card animate-fade-in">
+          <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 animate-fade-in">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-display font-bold text-base text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-blue-500 text-[20px]">summarize</span>
@@ -391,7 +391,6 @@ export default function History() {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
               {[
                 { icon: 'calendar_today', label: 'By Academic Year', color: 'indigo', filter: 'year' },
-                { icon: 'corporate_fare', label: 'By Department',    color: 'violet', filter: 'department' },
                 { icon: 'school',         label: 'By Semester',      color: 'teal',   filter: 'semester' },
                 { icon: 'date_range',     label: 'By Month',         color: 'amber',  filter: 'month' },
               ].map(f => (
@@ -431,7 +430,7 @@ export default function History() {
         )}
 
         {/* ── Advanced Filters Row ── */}
-        {false && (
+        {isHOD && (
           <div className="bg-surface rounded-2xl shadow-sm border border-outline-variant/30 p-5 flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1 w-full">
               <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Month</label>
@@ -474,23 +473,12 @@ export default function History() {
                 <option value="8th">8th Semester</option>
               </select>
             </div>
-            <div className="flex-1 w-full">
-              <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Department</label>
-              <select 
-                className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all outline-none appearance-none"
-                value={apiFilters.department}
-                onChange={(e) => setApiFilters({...apiFilters, department: e.target.value})}
-              >
-                <option value="">All Depts</option>
-                {Object.keys(DEPT_COLORS).map(dept => <option key={dept} value={dept}>{dept}</option>)}
-              </select>
-            </div>
           </div>
         )}
 
         {/* Loading */}
         {isFetching && (
-          <div className="flex flex-col items-center justify-center text-center p-12 bg-surface rounded-2xl premium-card min-h-[200px]">
+          <div className="flex flex-col items-center justify-center text-center p-12 bg-surface rounded-2xl border border-outline-variant/10 shadow-card min-h-[200px]">
             <span className="material-symbols-outlined text-4xl text-outline animate-spin mb-3">sync</span>
             <p className="font-label text-on-surface-variant text-sm">Fetching records based on filters…</p>
           </div>
@@ -611,7 +599,7 @@ export default function History() {
             </div>
 
             {/* Action Row - Exporting */}
-            {false && remarkList.length > 0 && (
+            {isHOD && remarkList.length > 0 && (
               <div className="bg-surface rounded-2xl p-5 shadow-sm border border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                   <h3 className="font-display font-bold text-[15px] text-on-surface mb-0.5">Export Report</h3>
