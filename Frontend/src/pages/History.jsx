@@ -431,60 +431,62 @@ export default function History() {
         )}
 
         {/* ── Advanced Filters Row ── */}
-        <div className="bg-surface rounded-2xl shadow-sm border border-outline-variant/30 p-5 flex flex-col sm:flex-row gap-4 items-end">
-          <div className="flex-1 w-full">
-            <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Month</label>
-            <input 
-              type="month" 
-              className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all outline-none"
-              value={apiFilters.month}
-              onChange={(e) => setApiFilters({...apiFilters, month: e.target.value})}
-            />
+        {isHOD && (
+          <div className="bg-surface rounded-2xl shadow-sm border border-outline-variant/30 p-5 flex flex-col sm:flex-row gap-4 items-end">
+            <div className="flex-1 w-full">
+              <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Month</label>
+              <input 
+                type="month" 
+                className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all outline-none"
+                value={apiFilters.month}
+                onChange={(e) => setApiFilters({...apiFilters, month: e.target.value})}
+              />
+            </div>
+            <div className="flex-1 w-full">
+              <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Academic Year</label>
+              <select 
+                className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all outline-none appearance-none"
+                value={apiFilters.year}
+                onChange={(e) => setApiFilters({...apiFilters, year: e.target.value})}
+              >
+                <option value="">All Years</option>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year">3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </div>
+            <div className="flex-1 w-full">
+              <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Semester</label>
+              <select 
+                className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all outline-none appearance-none"
+                value={apiFilters.semester}
+                onChange={(e) => setApiFilters({...apiFilters, semester: e.target.value})}
+              >
+                <option value="">All Semesters</option>
+                <option value="1st">1st Semester</option>
+                <option value="2nd">2nd Semester</option>
+                <option value="3rd">3rd Semester</option>
+                <option value="4th">4th Semester</option>
+                <option value="5th">5th Semester</option>
+                <option value="6th">6th Semester</option>
+                <option value="7th">7th Semester</option>
+                <option value="8th">8th Semester</option>
+              </select>
+            </div>
+            <div className="flex-1 w-full">
+              <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Department</label>
+              <select 
+                className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all outline-none appearance-none"
+                value={apiFilters.department}
+                onChange={(e) => setApiFilters({...apiFilters, department: e.target.value})}
+              >
+                <option value="">All Depts</option>
+                {Object.keys(DEPT_COLORS).map(dept => <option key={dept} value={dept}>{dept}</option>)}
+              </select>
+            </div>
           </div>
-          <div className="flex-1 w-full">
-            <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Academic Year</label>
-            <select 
-              className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all outline-none appearance-none"
-              value={apiFilters.year}
-              onChange={(e) => setApiFilters({...apiFilters, year: e.target.value})}
-            >
-              <option value="">All Years</option>
-              <option value="1st Year">1st Year</option>
-              <option value="2nd Year">2nd Year</option>
-              <option value="3rd Year">3rd Year</option>
-              <option value="4th Year">4th Year</option>
-            </select>
-          </div>
-          <div className="flex-1 w-full">
-            <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Semester</label>
-            <select 
-              className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all outline-none appearance-none"
-              value={apiFilters.semester}
-              onChange={(e) => setApiFilters({...apiFilters, semester: e.target.value})}
-            >
-              <option value="">All Semesters</option>
-              <option value="1st">1st Semester</option>
-              <option value="2nd">2nd Semester</option>
-              <option value="3rd">3rd Semester</option>
-              <option value="4th">4th Semester</option>
-              <option value="5th">5th Semester</option>
-              <option value="6th">6th Semester</option>
-              <option value="7th">7th Semester</option>
-              <option value="8th">8th Semester</option>
-            </select>
-          </div>
-          <div className="flex-1 w-full">
-            <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Department</label>
-            <select 
-              className="w-full bg-surface-container-lowest border border-outline-variant/40 rounded-xl px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary/20 transition-all outline-none appearance-none"
-              value={apiFilters.department}
-              onChange={(e) => setApiFilters({...apiFilters, department: e.target.value})}
-            >
-              <option value="">All Depts</option>
-              {Object.keys(DEPT_COLORS).map(dept => <option key={dept} value={dept}>{dept}</option>)}
-            </select>
-          </div>
-        </div>
+        )}
 
         {/* Loading */}
         {isFetching && (
@@ -609,7 +611,7 @@ export default function History() {
             </div>
 
             {/* Action Row - Exporting */}
-            {remarkList.length > 0 && (
+            {isHOD && remarkList.length > 0 && (
               <div className="bg-surface rounded-2xl p-5 shadow-sm border border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                   <h3 className="font-display font-bold text-[15px] text-on-surface mb-0.5">Export Report</h3>
