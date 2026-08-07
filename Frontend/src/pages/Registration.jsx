@@ -75,18 +75,73 @@ export default function Registration() {
     }
   }, [previewData.registerNumber]);
 
-  const handlePhotoUpload = (e) => {
+  const compressImage = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+          
+          let width = img.width;
+          let height = img.height;
+          
+          // Downscale to max 400x400 to help reduce size drastically
+          const MAX_WIDTH = 400;
+          const MAX_HEIGHT = 400;
+          
+          if (width > height) {
+            if (width > MAX_WIDTH) {
+              height = Math.round(height * (MAX_WIDTH / width));
+              width = MAX_WIDTH;
+            }
+          } else {
+            if (height > MAX_HEIGHT) {
+              width = Math.round(width * (MAX_HEIGHT / height));
+              height = MAX_HEIGHT;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          let quality = 0.9;
+          let dataUrl = canvas.toDataURL('image/jpeg', quality);
+          
+          // Base64 size in bytes is roughly (length * 3 / 4)
+          // Keep reducing quality until under 50KB (50 * 1024 bytes)
+          while (dataUrl.length * 0.75 > 50 * 1024 && quality > 0.1) {
+            quality -= 0.1;
+            dataUrl = canvas.toDataURL('image/jpeg', quality);
+          }
+          
+          resolve(dataUrl);
+        };
+        img.onerror = (error) => reject(error);
+      };
+      reader.onerror = (error) => reject(error);
+    });
+  };
+
+  const handlePhotoUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('File size exceeds 10MB limit.');
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please upload an image file.');
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        toast.loading('Compressing photo...', { id: 'compress' });
+        const compressedBase64 = await compressImage(file);
+        setPhotoUrl(compressedBase64);
+        toast.success('Photo compressed successfully!', { id: 'compress' });
+      } catch (err) {
+        toast.error('Failed to process image.', { id: 'compress' });
+      }
     }
   };
 
@@ -94,19 +149,22 @@ export default function Registration() {
     e.preventDefault();
   };
 
-  const handleDrop = (e) => {
+  const handleDrop = async (e) => {
     e.preventDefault();
     const file = e.dataTransfer.files[0];
     if (file) {
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('File size exceeds 10MB limit.');
+      if (!file.type.startsWith('image/')) {
+        toast.error('Please drop an image file.');
         return;
       }
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setPhotoUrl(reader.result);
-      };
-      reader.readAsDataURL(file);
+      try {
+        toast.loading('Compressing photo...', { id: 'compress' });
+        const compressedBase64 = await compressImage(file);
+        setPhotoUrl(compressedBase64);
+        toast.success('Photo compressed successfully!', { id: 'compress' });
+      } catch (err) {
+        toast.error('Failed to process image.', { id: 'compress' });
+      }
     }
   };
 
@@ -248,7 +306,7 @@ export default function Registration() {
                       </span>
                       <p className="pl-1">or drag and drop</p>
                     </div>
-                    <p className="text-xs leading-5 text-on-surface-variant mt-0.5">PNG or JPG up to 10MB</p>
+                    <p className="text-xs leading-5 text-on-surface-variant mt-0.5">Will be automatically compressed &lt; 50KB</p>
                   </div>
                 )}
               </div>
