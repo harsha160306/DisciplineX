@@ -269,12 +269,11 @@ export default function Home() {
       <div className="p-5 md:p-8 xl:p-10 max-w-7xl mx-auto space-y-7 pb-12">
 
         {/* ══ Quick Stats Strip ══ */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
           {[
             { label: 'Total Students',    value: stats.studentStats.total,       icon: 'groups',          color: 'indigo', sub: `${stats.studentStats.thisMonth} this month` },
             { label: 'Total Remarks',     value: stats.remarkStats.total,        icon: 'gavel',           color: 'rose',   sub: `${stats.remarkStats.today} today` },
             { label: 'Incharges',         value: stats.departmentInfo.facultyCount, icon: 'badge',        color: 'violet', sub: 'Discipline faculty' },
-            { label: 'Sections',          value: stats.departmentInfo.sections,  icon: 'meeting_room',    color: 'teal',   sub: 'Active sections' },
           ].map(s => (
             <div key={s.label}
               className="bg-surface-container-lowest rounded-2xl p-4 border border-outline-variant/30 shadow-card group hover:-translate-y-0.5 transition-all duration-200 flex flex-col gap-2">
@@ -293,7 +292,7 @@ export default function Home() {
         <div className="grid lg:grid-cols-3 gap-5">
 
           {/* Department Overview */}
-          <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 relative overflow-hidden flex flex-col justify-between">
+          <div className="bg-surface-container-lowest rounded-3xl p-6 premium-card relative overflow-hidden flex flex-col justify-between">
             <div className="absolute top-0 right-0 p-4 opacity-[0.04] text-on-surface pointer-events-none select-none">
               <span className="material-symbols-outlined text-[120px]" style={{ fontVariationSettings: "'FILL' 1" }}>{deptColor.icon}</span>
             </div>
@@ -308,7 +307,6 @@ export default function Home() {
                   { label: 'Academic Year',    value: stats.departmentInfo.academicYear },
                   { label: 'Total Students',   value: stats.studentStats.total },
                   { label: 'Faculty / Incharges', value: stats.departmentInfo.facultyCount },
-                  { label: 'Sections',         value: stats.departmentInfo.sections },
                   { label: 'HOD',              value: userName },
                 ].map((row, i, arr) => (
                   <div key={row.label}
@@ -322,7 +320,7 @@ export default function Home() {
           </div>
 
           {/* Student Statistics by Year */}
-          <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 flex flex-col">
+          <div className="bg-surface-container-lowest rounded-3xl p-6 premium-card flex flex-col">
             <h3 className="font-display font-bold text-base text-on-surface mb-5 flex items-center gap-2">
               <span className="material-symbols-outlined text-indigo-500 text-[20px]">groups</span>
               Student Statistics
@@ -368,7 +366,7 @@ export default function Home() {
                 { label: 'Others',       count: stats.remarkStats.categories['Others'],       icon: 'more_horiz', bgCls: 'bg-slate-50 dark:bg-slate-800/30',  iconCls: 'text-slate-600 dark:text-slate-400',  numCls: 'text-slate-700 dark:text-slate-300' },
               ].map(stat => (
                 <div key={stat.label}
-                  className="bg-surface-container-lowest rounded-2xl p-5 shadow-card border border-outline-variant/30 flex flex-col items-center justify-center text-center hover:-translate-y-0.5 transition-all duration-200">
+                  className="bg-surface-container-lowest rounded-2xl p-5 premium-card flex flex-col items-center justify-center text-center hover:-translate-y-0.5 transition-all duration-200">
                   <div className={`w-12 h-12 rounded-2xl ${stat.bgCls} ${stat.iconCls} flex items-center justify-center mb-3`}>
                     <span className="material-symbols-outlined text-[24px]" style={{ fontVariationSettings: "'FILL' 1" }}>{stat.icon}</span>
                   </div>
@@ -381,10 +379,10 @@ export default function Home() {
         </div>
 
         {/* ══ Row 2: Charts ══ */}
-        <div className="grid lg:grid-cols-3 gap-5">
+        <div className="grid lg:grid-cols-2 gap-5">
 
           {/* Monthly Remarks Bar Chart */}
-          <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 flex flex-col min-h-[320px]">
+          <div className="bg-surface-container-lowest rounded-3xl p-6 premium-card flex flex-col min-h-[320px]">
             <h3 className="font-display font-bold text-base text-on-surface mb-5 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">bar_chart</span>
               Monthly Remarks
@@ -403,7 +401,7 @@ export default function Home() {
           </div>
 
           {/* Remark Categories Pie Chart */}
-          <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 flex flex-col min-h-[320px]">
+          <div className="bg-surface-container-lowest rounded-3xl p-6 premium-card flex flex-col min-h-[320px]">
             <h3 className="font-display font-bold text-base text-on-surface mb-5 flex items-center gap-2">
               <span className="material-symbols-outlined text-primary text-[20px]">pie_chart</span>
               Remark Categories
@@ -423,31 +421,9 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Department-wise Comparison */}
-          <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 flex flex-col min-h-[320px]">
-            <h3 className="font-display font-bold text-base text-on-surface mb-5 flex items-center gap-2">
-              <span className="material-symbols-outlined text-emerald-500 text-[20px]">compare_arrows</span>
-              Department-wise Remarks
-            </h3>
-            <div className="flex-1 w-full">
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={stats.deptWiseRemarks} layout="vertical" margin={{ top: 0, right: 10, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="var(--color-outline-variant)" strokeOpacity={0.4} />
-                  <XAxis type="number" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--color-on-surface-variant)' }} />
-                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: 'var(--color-on-surface-variant)' }} width={70} />
-                  <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 24px rgba(0,0,0,0.12)', fontSize: 12 }} />
-                  <Bar dataKey="remarks" radius={[0, 6, 6, 0]} maxBarSize={18}>
-                    {stats.deptWiseRemarks.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.name === userDept ? deptColor.to : '#94a3b8'} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
           </div>
         </div>
 
       </div>
-    </div>
   );
 }

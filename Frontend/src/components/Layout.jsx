@@ -316,10 +316,10 @@ export default function Layout({ children }) {
       <div className={`flex-1 flex flex-col min-h-screen transition-all duration-300 w-full ${isCollapsed ? 'md:ml-[72px]' : 'md:ml-64'}`}>
 
         {/* ── Top Header ─────────────────────────────────────── */}
-        <header className="sticky top-0 z-30 h-[60px] shrink-0
-          bg-surface-container-lowest/80 backdrop-blur-2xl
-          border-b border-outline-variant/15
-          flex items-center justify-between px-5 md:px-7 gap-4 header-shadow">
+        <header className="sticky top-0 z-30 h-[70px] shrink-0
+          glass-panel
+          border-b border-outline-variant/20
+          flex items-center justify-between px-5 md:px-8 gap-4 shadow-sm transition-all">
 
           <div className="flex items-center gap-3">
             <button
@@ -350,9 +350,9 @@ export default function Layout({ children }) {
             {isIncharge && (
               <Link
                 to="/registration"
-                className="flex items-center gap-1.5 px-4 py-2 rounded-xl brand-gradient text-white font-label font-semibold text-[13px] shadow-brand-sm hover:opacity-95 transition-all active:scale-[.97]"
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl brand-gradient text-white font-label font-bold text-[13px] shadow-brand hover:-translate-y-0.5 transition-all active:scale-[.97]"
               >
-                <span className="material-symbols-outlined text-[15px]">person_add</span>
+                <span className="material-symbols-outlined text-[16px]">person_add</span>
                 <span className="hidden sm:inline">Enroll</span>
               </Link>
             )}

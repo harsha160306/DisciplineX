@@ -371,7 +371,7 @@ export default function History() {
 
         {/* ── History Module & Reports (HOD only) ── */}
         {isHOD && (
-          <div className="bg-surface-container-lowest rounded-3xl p-6 shadow-card border border-outline-variant/30 animate-fade-in">
+          <div className="bg-surface-container-lowest rounded-3xl p-6 premium-card animate-fade-in">
             <div className="flex items-center justify-between mb-5">
               <h3 className="font-display font-bold text-base text-on-surface flex items-center gap-2">
                 <span className="material-symbols-outlined text-blue-500 text-[20px]">summarize</span>
@@ -431,7 +431,7 @@ export default function History() {
         )}
 
         {/* ── Advanced Filters Row ── */}
-        {isHOD && (
+        {false && (
           <div className="bg-surface rounded-2xl shadow-sm border border-outline-variant/30 p-5 flex flex-col sm:flex-row gap-4 items-end">
             <div className="flex-1 w-full">
               <label className="block text-[11px] font-label font-semibold text-on-surface-variant uppercase tracking-wider mb-1.5">Month</label>
@@ -490,7 +490,7 @@ export default function History() {
 
         {/* Loading */}
         {isFetching && (
-          <div className="flex flex-col items-center justify-center text-center p-12 bg-surface rounded-2xl border border-outline-variant/10 shadow-card min-h-[200px]">
+          <div className="flex flex-col items-center justify-center text-center p-12 bg-surface rounded-2xl premium-card min-h-[200px]">
             <span className="material-symbols-outlined text-4xl text-outline animate-spin mb-3">sync</span>
             <p className="font-label text-on-surface-variant text-sm">Fetching records based on filters…</p>
           </div>
@@ -611,7 +611,7 @@ export default function History() {
             </div>
 
             {/* Action Row - Exporting */}
-            {isHOD && remarkList.length > 0 && (
+            {false && remarkList.length > 0 && (
               <div className="bg-surface rounded-2xl p-5 shadow-sm border border-outline-variant/30 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                   <h3 className="font-display font-bold text-[15px] text-on-surface mb-0.5">Export Report</h3>
