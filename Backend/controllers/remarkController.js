@@ -1,4 +1,13 @@
 import pool from '../db.js';
+import nodemailer from 'nodemailer';
+
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_EMAIL,
+    pass: process.env.GMAIL_APP_PASSWORD,
+  },
+});
 
 export const getStudentRemarks = async (req, res) => {
   try {
@@ -28,18 +37,44 @@ export const recordRemark = async (req, res) => {
     }
 
     let sId = student_id;
+    let studentEmail = null;
+    let studentName = null;
+
     if (!sId) {
       const [students] = await pool.query('SELECT * FROM students WHERE register_number = ?', [register_number]);
       if (students.length === 0) {
         return res.status(404).json({ message: 'Student not found.' });
       }
       sId = students[0].id;
+      studentEmail = students[0].email;
+      studentName = students[0].name;
+    } else {
+      const [students] = await pool.query('SELECT * FROM students WHERE id = ?', [sId]);
+      if (students.length > 0) {
+        studentEmail = students[0].email;
+        studentName = students[0].name;
+      }
     }
 
     await pool.query(
       'INSERT INTO remarks (student_id, remark_text, recorded_by) VALUES (?, ?, ?)',
       [sId, remark_text, recorded_by]
     );
+
+    // Send email notification
+    if (studentEmail) {
+      try {
+        await transporter.sendMail({
+          from: process.env.GMAIL_EMAIL,
+          to: studentEmail,
+          subject: 'New Disciplinary Remark Recorded - DisciplineX',
+          text: `Dear ${studentName},\n\nA new disciplinary remark has been recorded on your profile.\n\nRemark Details:\n"${remark_text}"\n\nPlease check the portal or contact your department for more details.\n\nRegards,\nModern Institute College`,
+        });
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+        // We still return success for remark creation even if email fails
+      }
+    }
 
     res.status(201).json({ message: 'Remark recorded successfully.' });
   } catch (error) {
