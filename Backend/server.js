@@ -27,7 +27,10 @@ app.get('/api/health', (req, res) => {
   res.status(200).json({ status: 'OK', message: 'MIC Backend is running' });
 });
 
-app.listen(PORT, () => {
+import connectDB from './db.js';
+
+app.listen(PORT, async () => {
+  await connectDB();
   console.log(`Server is running on port ${PORT}`);
 });
 

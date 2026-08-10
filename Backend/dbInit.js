@@ -1,186 +1,82 @@
-import mysql from 'mysql2/promise';
+import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import User from './models/User.js';
+import Department from './models/Department.js';
+import Student from './models/Student.js';
+import SystemSetting from './models/SystemSetting.js';
+import ActivityLog from './models/ActivityLog.js';
+import Remark from './models/Remark.js';
 
 dotenv.config();
 
-const dbConfig = {
-  host: process.env.MYSQL_ADDON_HOST || process.env.DB_HOST || 'localhost',
-  user: process.env.MYSQL_ADDON_USER || process.env.DB_USER || 'root',
-  password: process.env.MYSQL_ADDON_PASSWORD || process.env.DB_PASSWORD || '',
-  database: process.env.MYSQL_ADDON_DB || process.env.DB_NAME || 'mic_attendance',
-  port: parseInt(process.env.MYSQL_ADDON_PORT || '3306', 10),
-};
-
-
-
 const initializeDB = async () => {
-  let connection;
   try {
-    console.log('Connecting to MySQL database for initialization...');
-    connection = await mysql.createConnection(dbConfig);
-    console.log('Connected successfully. Initializing Database Tables...');
+    console.log('Connecting to MongoDB...');
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected successfully. Initializing Database Collections...');
 
-    // 1. Users Table
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS users (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        username VARCHAR(255) UNIQUE NOT NULL,
-        password VARCHAR(255) NOT NULL,
-        role VARCHAR(50) NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        department VARCHAR(100),
-        phone VARCHAR(20),
-        employee_id VARCHAR(50),
-        email VARCHAR(255),
-        status VARCHAR(20) DEFAULT 'Active',
-        designation VARCHAR(100) DEFAULT 'Discipline Incharge',
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('- Users table verified/created.');
-
-    // Migration of columns for legacy users table if exists
-    const usersColumns = [
-      { name: 'department', type: 'VARCHAR(100)' },
-      { name: 'phone', type: 'VARCHAR(20)' },
-      { name: 'employee_id', type: 'VARCHAR(50)' },
-      { name: 'email', type: 'VARCHAR(255)' },
-      { name: 'status', type: "VARCHAR(20) DEFAULT 'Active'" },
-      { name: 'designation', type: "VARCHAR(100) DEFAULT 'Discipline Incharge'" },
-      { name: 'created_at', type: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP' }
-    ];
-    for (const col of usersColumns) {
-      try {
-        await connection.query(`ALTER TABLE users ADD COLUMN ${col.name} ${col.type}`);
-        console.log(`- Column ${col.name} verified/added to users.`);
-      } catch (_) {}
-    }
-
-    // Seed default users if users table has no admin
-    const [userRows] = await connection.query("SELECT COUNT(*) as count FROM users WHERE role = 'Admin'");
-    if (userRows[0].count === 0) {
-      await connection.query(`
-        INSERT INTO users (username, password, role, name, department, phone, employee_id, email, status) VALUES 
-        ('admin', 'Admin@123', 'Admin', 'System Admin', '', '9500011000', 'ADM001', 'admin@mic.edu', 'Active'),
-        ('hod_cse', 'HOD@cse123', 'HOD', 'Dr. R. Kavitha', 'CSE', '9500011001', 'HOD001', 'hod_cse@mic.edu', 'Active'),
-        ('hod_ece', 'HOD@ece123', 'HOD', 'Dr. S. Rajkumar', 'ECE', '9500011002', 'HOD002', 'hod_ece@mic.edu', 'Active'),
-        ('hod_mech', 'HOD@mech123', 'HOD', 'Dr. M. Priya', 'Mechanical', '9500011003', 'HOD003', 'hod_mech@mic.edu', 'Active'),
-        ('incharge_cse1', 'Inc@cse1', 'Incharge', 'Mr. A. Senthil', 'CSE', '9500012001', 'INC001', 'incharge_cse1@mic.edu', 'Active'),
-        ('incharge_cse2', 'Inc@cse2', 'Incharge', 'Ms. B. Divya', 'CSE', '9500012002', 'INC002', 'incharge_cse2@mic.edu', 'Active'),
-        ('incharge_ece1', 'Inc@ece1', 'Incharge', 'Mr. C. Rajan', 'ECE', '9500012003', 'INC003', 'incharge_ece1@mic.edu', 'Active')
-      `);
+    // 1. Users
+    const adminCount = await User.countDocuments({ role: 'Admin' });
+    if (adminCount === 0) {
+      await User.insertMany([
+        { username: 'admin', password: 'Admin@123', role: 'Admin', name: 'System Admin', department: '', phone: '9500011000', employee_id: 'ADM001', email: 'admin@mic.edu', status: 'Active' },
+        { username: 'hod_cse', password: 'HOD@cse123', role: 'HOD', name: 'Dr. R. Kavitha', department: 'CSE', phone: '9500011001', employee_id: 'HOD001', email: 'hod_cse@mic.edu', status: 'Active' },
+        { username: 'hod_ece', password: 'HOD@ece123', role: 'HOD', name: 'Dr. S. Rajkumar', department: 'ECE', phone: '9500011002', employee_id: 'HOD002', email: 'hod_ece@mic.edu', status: 'Active' },
+        { username: 'hod_mech', password: 'HOD@mech123', role: 'HOD', name: 'Dr. M. Priya', department: 'Mechanical', phone: '9500011003', employee_id: 'HOD003', email: 'hod_mech@mic.edu', status: 'Active' },
+        { username: 'incharge_cse1', password: 'Inc@cse1', role: 'Incharge', name: 'Mr. A. Senthil', department: 'CSE', phone: '9500012001', employee_id: 'INC001', email: 'incharge_cse1@mic.edu', status: 'Active' },
+        { username: 'incharge_cse2', password: 'Inc@cse2', role: 'Incharge', name: 'Ms. B. Divya', department: 'CSE', phone: '9500012002', employee_id: 'INC002', email: 'incharge_cse2@mic.edu', status: 'Active' },
+        { username: 'incharge_ece1', password: 'Inc@ece1', role: 'Incharge', name: 'Mr. C. Rajan', department: 'ECE', phone: '9500012003', employee_id: 'INC003', email: 'incharge_ece1@mic.edu', status: 'Active' }
+      ]);
       console.log('- Default test logins (Admin, HODs, Incharges) seeded.');
+    } else {
+      console.log('- Users already seeded.');
     }
 
-    // 2. Departments Table
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS departments (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(100) UNIQUE NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('- Departments table verified/created.');
-
-    const [deptRows] = await connection.query('SELECT COUNT(*) as count FROM departments');
-    if (deptRows[0].count === 0) {
-      await connection.query("INSERT INTO departments (name) VALUES ('CSE'), ('ECE'), ('Mechanical'), ('Civil'), ('MBA')");
+    // 2. Departments
+    const deptCount = await Department.countDocuments();
+    if (deptCount === 0) {
+      await Department.insertMany([
+        { name: 'CSE' }, { name: 'ECE' }, { name: 'Mechanical' }, { name: 'Civil' }, { name: 'MBA' }
+      ]);
       console.log('- Default departments seeded.');
+    } else {
+      console.log('- Departments already seeded.');
     }
 
-    // 3. Activity Logs Table
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS activity_logs (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        user_name VARCHAR(255) NOT NULL,
-        user_role VARCHAR(50) NOT NULL,
-        action VARCHAR(255) NOT NULL,
-        date VARCHAR(20) NOT NULL,
-        time VARCHAR(20) NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('- Activity logs table verified/created.');
-
-    // 4. System Settings Table
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS system_settings (
-        setting_key VARCHAR(100) PRIMARY KEY,
-        setting_value TEXT NOT NULL
-      )
-    `);
-    console.log('- System settings table verified/created.');
-
-    const [settingRows] = await connection.query('SELECT COUNT(*) as count FROM system_settings');
-    if (settingRows[0].count === 0) {
-      await connection.query(`
-        INSERT INTO system_settings (setting_key, setting_value) VALUES 
-        ('college_name', 'Modern Institute College'),
-        ('college_logo', ''),
-        ('academic_year', '2025-2026'),
-        ('remark_categories', 'Late-comer, Non-uniform, Indiscipline, Others'),
-        ('password_policy', '{"minLength": 6, "requireSpecial": false}')
-      `);
+    // 3. System Settings
+    const settingsCount = await SystemSetting.countDocuments();
+    if (settingsCount === 0) {
+      await SystemSetting.insertMany([
+        { setting_key: 'college_name', setting_value: 'Modern Institute College' },
+        { setting_key: 'college_logo', setting_value: '' },
+        { setting_key: 'academic_year', setting_value: '2025-2026' },
+        { setting_key: 'remark_categories', setting_value: 'Late-comer, Non-uniform, Indiscipline, Others' },
+        { setting_key: 'password_policy', setting_value: '{"minLength": 6, "requireSpecial": false}' }
+      ]);
       console.log('- Default system settings seeded.');
+    } else {
+      console.log('- System settings already seeded.');
     }
 
-    // 5. Students Table
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS students (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        register_number VARCHAR(50) UNIQUE NOT NULL,
-        name VARCHAR(255) NOT NULL,
-        course VARCHAR(50) NOT NULL,
-        department VARCHAR(100) NOT NULL,
-        academic_year VARCHAR(50) NOT NULL,
-        validity VARCHAR(50) NOT NULL,
-        dob VARCHAR(50),
-        blood_group VARCHAR(10),
-        address TEXT,
-        section VARCHAR(10) NOT NULL,
-        semester VARCHAR(20) NOT NULL,
-        email VARCHAR(255),
-        phone VARCHAR(20),
-        photo_url TEXT,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-    console.log('- Students table verified/created.');
-
-    // Seed Students
-    const [studentRows] = await connection.query('SELECT COUNT(*) as count FROM students');
-    if (studentRows[0].count === 0) {
-      await connection.query(`
-        INSERT INTO students (register_number, name, course, department, academic_year, validity, dob, blood_group, address, section, semester, email, phone, photo_url) VALUES 
-        ('2024CS101', 'Rahul Sharma', 'B.Tech', 'CSE', '3rd Year', '2027', NULL, NULL, NULL, 'A', 'V', 'rahul@gmail.com', '9876543210', 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnM-pyl2GLRMVnjxwsCXyp4bZU_dGsSv6BzQCj0OKi8NlhK2UyNps1HU1jaO-RKjb9B_updyWAjRKfBDg572WWob87YdE1z3TdQcV8a2ef1wKEeFrB9sEdd27i_dIOWCyUVlMu7yFK_wIg3BX_KEVleXsL8hvR0fdmFsvCxZPM2qBBvYkaKN8J6PNGNIJVFnkkqqKKD13x4T5B4-oy5GOfVTfsdQ1i_tgyeDusR7TI6zX1MarWjuJGvuY-hBnEByhJW71sEbmPwDrB'),
-        ('2024ME045', 'Anjali Verma', 'B.Tech', 'Mechanical', '2nd Year', '2028', NULL, NULL, NULL, 'B', 'III', 'anjali@gmail.com', '9876543211', 'https://lh3.googleusercontent.com/aida-public/AB6AXuCTuEzyi6BX288E_wzMVHXWMUOfXKPnfoPAH-0dsuJNUGciaHdnYoTT5IyMfM-JJZ7OW1ZV70AIG19OH-9tzOJmQq8qbSS0Xg34ph03JJs5GmH2skFMmBT1Xw7a2IL6TSpY0ftt8RCdDU_LuiAX1WBu9ZPaWZzIH6GwRQIVRSprKZ-2ZlDKud2OZ_VEYon1QNT90Cs_CwlzK6xDNIjcFck0Y3tFfIkkamZS7duB52mqHKmOgPa_uVfZVj72aDAEqz9luXXxnSkVE_YB')
-      `);
+    // 4. Students
+    const studentCount = await Student.countDocuments();
+    if (studentCount === 0) {
+      await Student.insertMany([
+        { register_number: '2024CS101', name: 'Rahul Sharma', course: 'B.Tech', department: 'CSE', academic_year: '3rd Year', validity: '2027', section: 'A', semester: 'V', email: 'rahul@gmail.com', phone: '9876543210', photo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnM-pyl2GLRMVnjxwsCXyp4bZU_dGsSv6BzQCj0OKi8NlhK2UyNps1HU1jaO-RKjb9B_updyWAjRKfBDg572WWob87YdE1z3TdQcV8a2ef1wKEeFrB9sEdd27i_dIOWCyUVlMu7yFK_wIg3BX_KEVleXsL8hvR0fdmFsvCxZPM2qBBvYkaKN8J6PNGNIJVFnkkqqKKD13x4T5B4-oy5GOfVTfsdQ1i_tgyeDusR7TI6zX1MarWjuJGvuY-hBnEByhJW71sEbmPwDrB' },
+        { register_number: '2024ME045', name: 'Anjali Verma', course: 'B.Tech', department: 'Mechanical', academic_year: '2nd Year', validity: '2028', section: 'B', semester: 'III', email: 'anjali@gmail.com', phone: '9876543211', photo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCTuEzyi6BX288E_wzMVHXWMUOfXKPnfoPAH-0dsuJNUGciaHdnYoTT5IyMfM-JJZ7OW1ZV70AIG19OH-9tzOJmQq8qbSS0Xg34ph03JJs5GmH2skFMmBT1Xw7a2IL6TSpY0ftt8RCdDU_LuiAX1WBu9ZPaWZzIH6GwRQIVRSprKZ-2ZlDKud2OZ_VEYon1QNT90Cs_CwlzK6xDNIjcFck0Y3tFfIkkamZS7duB52mqHKmOgPa_uVfZVj72aDAEqz9luXXxnSkVE_YB' }
+      ]);
       console.log('- Default test students seeded.');
+    } else {
+      console.log('- Students already seeded.');
     }
 
-    // 6. Remarks Table
-    await connection.query(`
-      CREATE TABLE IF NOT EXISTS remarks (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        student_id INT NOT NULL,
-        remark_text TEXT NOT NULL,
-        recorded_by INT NOT NULL,
-        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (student_id) REFERENCES students(id) ON DELETE CASCADE,
-        FOREIGN KEY (recorded_by) REFERENCES users(id) ON DELETE CASCADE
-      )
-    `);
-    console.log('- Remarks table verified/created.');
+    // 5. Remarks and Activity Logs will be created via API.
 
     console.log('Database initialization and seeding completed successfully!');
     process.exit(0);
   } catch (err) {
     console.error('Error during database initialization:', err);
     process.exit(1);
-  } finally {
-    if (connection) {
-      await connection.end();
-    }
   }
 };
 

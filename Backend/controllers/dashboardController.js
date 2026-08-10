@@ -1,34 +1,36 @@
-import pool from '../db.js';
+import User from '../models/User.js';
+import Student from '../models/Student.js';
+import Remark from '../models/Remark.js';
 
 export const getHODDashboardData = async (req, res) => {
   try {
     const userRole = req.user.role;
     const userDept = req.user.department;
 
-    if (userRole !== 'HOD') {
-      return res.status(403).json({ message: 'Access denied.' });
-    }
+    if (userRole !== 'HOD') return res.status(403).json({ message: 'Access denied.' });
 
-    const today = new Date().toISOString().slice(0, 10);
-    const firstDayOfMonth = new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString().slice(0, 10);
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    const firstDayOfMonth = new Date(todayDate.getFullYear(), todayDate.getMonth(), 1);
+
+    // Get all student IDs for this department to easily filter remarks
+    const deptStudents = await Student.find({ department: userDept }).select('_id');
+    const deptStudentIds = deptStudents.map(s => s._id);
 
     // 1. Department Overview Stats
-    const [totalStudents] = await pool.query('SELECT COUNT(*) as count FROM students WHERE department = ?', [userDept]);
-    const [monthStudents] = await pool.query('SELECT COUNT(*) as count FROM students WHERE department = ? AND DATE(created_at) >= ?', [userDept, firstDayOfMonth]);
-    const [latestStudent] = await pool.query('SELECT name, register_number, created_at FROM students WHERE department = ? ORDER BY created_at DESC LIMIT 1', [userDept]);
+    const totalStudents = deptStudentIds.length;
+    const monthStudents = await Student.countDocuments({ department: userDept, created_at: { $gte: firstDayOfMonth } });
+    const latestStudent = await Student.findOne({ department: userDept }).sort({ created_at: -1 });
     
-    // Total faculty (incharges) and sections
-    const [facultyCount] = await pool.query('SELECT COUNT(*) as count FROM users WHERE role = "Incharge" AND department = ?', [userDept]);
-    const [sectionsList] = await pool.query('SELECT DISTINCT section FROM students WHERE department = ?', [userDept]);
-    const sections = sectionsList.map(s => s.section).filter(Boolean);
+    const facultyCount = await User.countDocuments({ role: 'Incharge', department: userDept });
+    const sectionsList = await Student.distinct('section', { department: userDept });
+    const sections = sectionsList.filter(Boolean);
 
     // 2. Student Stats by Year
-    const [yearlyStats] = await pool.query(`
-      SELECT academic_year, COUNT(*) as count 
-      FROM students 
-      WHERE department = ? 
-      GROUP BY academic_year
-    `, [userDept]);
+    const yearlyStatsRaw = await Student.aggregate([
+      { $match: { department: userDept } },
+      { $group: { _id: "$academic_year", count: { $sum: 1 } } }
+    ]);
 
     const formatYear = (yearStr) => {
       if (yearStr.includes('1')) return 'Year I';
@@ -38,161 +40,135 @@ export const getHODDashboardData = async (req, res) => {
       return yearStr;
     };
 
-    const studentYearStats = {
-      'Year I': 0, 'Year II': 0, 'Year III': 0, 'Year IV': 0
-    };
-    yearlyStats.forEach(stat => {
-      const formatted = formatYear(stat.academic_year);
-      if (studentYearStats[formatted] !== undefined) {
-        studentYearStats[formatted] += stat.count;
-      }
+    const studentYearStats = { 'Year I': 0, 'Year II': 0, 'Year III': 0, 'Year IV': 0 };
+    yearlyStatsRaw.forEach(stat => {
+      const formatted = formatYear(stat._id || '');
+      if (studentYearStats[formatted] !== undefined) studentYearStats[formatted] += stat.count;
     });
 
     // 3. Remark Statistics Breakdown
-    const [categoryStats] = await pool.query(`
-      SELECT r.remark_text, COUNT(*) as count FROM remarks r
-      JOIN students s ON r.student_id = s.id
-      WHERE s.department = ?
-      GROUP BY r.remark_text
-    `, [userDept]);
+    const categoryStats = await Remark.aggregate([
+      { $match: { student_id: { $in: deptStudentIds } } },
+      { $group: { _id: "$remark_text", count: { $sum: 1 } } }
+    ]);
 
     let totalRemarksCount = 0;
-    const remarkCategories = {
-      'Non-uniform': 0,
-      'Late-comer': 0,
-      'Indiscipline': 0,
-      'Others': 0
-    };
-
+    const remarkCategories = { 'Non-uniform': 0, 'Late-comer': 0, 'Indiscipline': 0, 'Others': 0 };
     categoryStats.forEach(stat => {
       totalRemarksCount += stat.count;
-      if (remarkCategories[stat.remark_text] !== undefined) {
-        remarkCategories[stat.remark_text] += stat.count;
-      } else {
-        remarkCategories['Others'] += stat.count;
-      }
+      if (remarkCategories[stat._id] !== undefined) remarkCategories[stat._id] += stat.count;
+      else remarkCategories['Others'] += stat.count;
     });
 
-    // For Pie Chart format
-    const categoriesPie = Object.keys(remarkCategories).map(key => ({
-      name: key,
-      value: remarkCategories[key]
-    })).filter(cat => cat.value > 0);
+    const categoriesPie = Object.keys(remarkCategories).map(key => ({ name: key, value: remarkCategories[key] })).filter(cat => cat.value > 0);
 
-    const [todayRemarks] = await pool.query(`
-      SELECT COUNT(*) as count FROM remarks r
-      JOIN students s ON r.student_id = s.id
-      WHERE s.department = ? AND DATE(r.created_at) = ?
-    `, [userDept, today]);
+    const todayRemarksCount = await Remark.countDocuments({ 
+      student_id: { $in: deptStudentIds }, 
+      created_at: { $gte: todayDate } 
+    });
 
     // 4. Monthly Remarks (Bar Chart Data - Last 6 Months)
-    const [monthlyData] = await pool.query(`
-      SELECT DATE_FORMAT(r.created_at, '%b') as month, COUNT(*) as remarks
-      FROM remarks r
-      JOIN students s ON r.student_id = s.id
-      WHERE s.department = ? AND r.created_at >= DATE_SUB(NOW(), INTERVAL 6 MONTH)
-      GROUP BY month, MONTH(r.created_at)
-      ORDER BY MONTH(r.created_at)
-    `, [userDept]);
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const last6 = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date(todayDate.getFullYear(), todayDate.getMonth() - i, 1);
+      last6.push({ month: months[d.getMonth()], key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, remarks: 0 });
+    }
+
+    const deptRemarks = await Remark.find({ student_id: { $in: deptStudentIds }, created_at: { $gte: new Date(todayDate.getFullYear(), todayDate.getMonth() - 5, 1) } });
+    deptRemarks.forEach(r => {
+      const rDate = new Date(r.created_at);
+      const rKey = `${rDate.getFullYear()}-${String(rDate.getMonth() + 1).padStart(2, '0')}`;
+      const bucket = last6.find(b => b.key === rKey);
+      if (bucket) bucket.remarks++;
+    });
 
     // 5. Department-wise Remarks (Comparison Bar Chart)
-    const [deptWiseRemarks] = await pool.query(`
-      SELECT s.department as name, COUNT(*) as remarks
-      FROM remarks r
-      JOIN students s ON r.student_id = s.id
-      GROUP BY s.department
-      ORDER BY remarks DESC
-    `);
+    const allRemarks = await Remark.find().populate('student_id');
+    const deptWiseCount = {};
+    allRemarks.forEach(r => {
+      if (r.student_id) {
+        const d = r.student_id.department;
+        deptWiseCount[d] = (deptWiseCount[d] || 0) + 1;
+      }
+    });
+    const deptWiseRemarks = Object.keys(deptWiseCount).map(k => ({ name: k, remarks: deptWiseCount[k] })).sort((a, b) => b.remarks - a.remarks);
 
     // 6. Recent Remarks Table (Last 5)
-    const [recentRemarks] = await pool.query(`
-      SELECT s.name as student, s.register_number as regNo, r.remark_text as remark, r.created_at as date, u.name as submittedBy
-      FROM remarks r
-      JOIN students s ON r.student_id = s.id
-      LEFT JOIN users u ON r.recorded_by = u.id
-      WHERE s.department = ?
-      ORDER BY r.created_at DESC
-      LIMIT 5
-    `, [userDept]);
+    const recentRemarksRaw = await Remark.find({ student_id: { $in: deptStudentIds } })
+      .populate('student_id').populate('recorded_by')
+      .sort({ created_at: -1 }).limit(5);
+
+    const recentRemarks = recentRemarksRaw.map(r => ({
+      student: r.student_id ? r.student_id.name : 'Unknown',
+      regNo: r.student_id ? r.student_id.register_number : 'Unknown',
+      remark: r.remark_text,
+      date: r.created_at,
+      submittedBy: r.recorded_by ? r.recorded_by.name : 'Unknown'
+    }));
 
     // 7. Students with Multiple Remarks
-    const [repeatOffenders] = await pool.query(`
-      SELECT s.name as student, COUNT(*) as remarks
-      FROM remarks r
-      JOIN students s ON r.student_id = s.id
-      WHERE s.department = ?
-      GROUP BY s.id
-      HAVING remarks > 1
-      ORDER BY remarks DESC
-      LIMIT 5
-    `, [userDept]);
+    const repeatOffendersRaw = await Remark.aggregate([
+      { $match: { student_id: { $in: deptStudentIds } } },
+      { $group: { _id: "$student_id", remarks: { $sum: 1 } } },
+      { $match: { remarks: { $gt: 1 } } },
+      { $sort: { remarks: -1 } },
+      { $limit: 5 }
+    ]);
+    const repeatOffenderIds = repeatOffendersRaw.map(r => r._id);
+    const repeatOffenderStudents = await Student.find({ _id: { $in: repeatOffenderIds } });
+    const repeatOffenders = repeatOffendersRaw.map(r => {
+      const stu = repeatOffenderStudents.find(s => s._id.toString() === r._id.toString());
+      return { student: stu ? stu.name : 'Unknown', remarks: r.remarks };
+    });
 
     // 8. Discipline Incharge Information
-    const [inchargeInfo] = await pool.query(`
-      SELECT u.name, u.department, COUNT(r.id) as remarksSubmittedThisMonth
-      FROM users u
-      LEFT JOIN remarks r ON u.id = r.recorded_by AND DATE(r.created_at) >= ?
-      WHERE u.department = ? AND u.role = 'Incharge'
-      GROUP BY u.id
-    `, [firstDayOfMonth, userDept]);
+    const incharges = await User.find({ role: 'Incharge', department: userDept });
+    const inchargeInfo = await Promise.all(incharges.map(async inc => {
+      const remarksThisMonth = await Remark.countDocuments({ recorded_by: inc._id, created_at: { $gte: firstDayOfMonth } });
+      return { name: inc.name, department: inc.department, remarksSubmittedThisMonth: remarksThisMonth };
+    }));
 
-    // 9. Notifications (Mocked from latest registrations and remarks)
+    // 9. Notifications
     const notifications = [];
-    if (latestStudent.length > 0) {
-      notifications.push({
-        id: 'n1',
-        type: 'registration',
-        message: `Student Registered: ${latestStudent[0].name}`,
-        time: latestStudent[0].created_at
-      });
+    if (latestStudent) {
+      notifications.push({ id: 'n1', type: 'registration', message: `Student Registered: ${latestStudent.name}`, time: latestStudent.created_at });
     }
     recentRemarks.slice(0, 3).forEach((r, idx) => {
-      notifications.push({
-        id: `n${idx + 2}`,
-        type: 'remark',
-        message: `Remark Submitted for ${r.student} by ${r.submittedBy || 'Unknown'}.`,
-        time: r.date
-      });
+      notifications.push({ id: `n${idx + 2}`, type: 'remark', message: `Remark Submitted for ${r.student} by ${r.submittedBy}.`, time: r.date });
     });
     
-    // Add mock for New Incharge Added
-    const [latestIncharge] = await pool.query('SELECT name, created_at FROM users WHERE role = "Incharge" AND department = ? ORDER BY created_at DESC LIMIT 1', [userDept]);
-    if (latestIncharge.length > 0) {
-      notifications.push({
-        id: 'n_inc',
-        type: 'incharge',
-        message: `New Incharge Added: ${latestIncharge[0].name}`,
-        time: latestIncharge[0].created_at
-      });
+    const latestIncharge = await User.findOne({ role: 'Incharge', department: userDept }).sort({ created_at: -1 });
+    if (latestIncharge) {
+      notifications.push({ id: 'n_inc', type: 'incharge', message: `New Incharge Added: ${latestIncharge.name}`, time: latestIncharge.created_at });
     }
-
     notifications.sort((a, b) => new Date(b.time) - new Date(a.time));
 
     res.status(200).json({
       departmentInfo: { 
         name: userDept,
-        academicYear: '2025-2026', // usually computed or retrieved from settings
-        facultyCount: facultyCount[0]?.count || 0,
+        academicYear: '2025-2026',
+        facultyCount,
         sections: sections.join(', ') || 'N/A'
       },
       studentStats: {
-        total: totalStudents[0]?.count || 0,
-        thisMonth: monthStudents[0]?.count || 0,
-        latest: latestStudent[0] || null,
+        total: totalStudents,
+        thisMonth: monthStudents,
+        latest: latestStudent,
         byYear: studentYearStats
       },
       remarkStats: {
         total: totalRemarksCount,
-        today: todayRemarks[0]?.count || 0,
+        today: todayRemarksCount,
         categories: remarkCategories
       },
       remarkCategories: categoriesPie,
-      monthlyRemarks: monthlyData,
-      deptWiseRemarks: deptWiseRemarks,
-      recentRemarks: recentRemarks,
-      repeatOffenders: repeatOffenders,
-      inchargeInfo: inchargeInfo,
-      notifications: notifications
+      monthlyRemarks: last6.map(b => ({ month: b.month, remarks: b.remarks })),
+      deptWiseRemarks,
+      recentRemarks,
+      repeatOffenders,
+      inchargeInfo,
+      notifications
     });
 
   } catch (error) {

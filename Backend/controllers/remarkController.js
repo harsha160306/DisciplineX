@@ -1,4 +1,6 @@
-import pool from '../db.js';
+import Remark from '../models/Remark.js';
+import Student from '../models/Student.js';
+import User from '../models/User.js';
 import { google } from 'googleapis';
 
 const createGmailClient = () => {
@@ -19,15 +21,17 @@ const createGmailClient = () => {
 export const getStudentRemarks = async (req, res) => {
   try {
     const { studentId } = req.params;
-    const [remarks] = await pool.query(
-      `SELECT r.*, u.name as incharge_name 
-       FROM remarks r 
-       LEFT JOIN users u ON r.recorded_by = u.id 
-       WHERE r.student_id = ? 
-       ORDER BY r.created_at DESC`,
-      [studentId]
-    );
-    res.status(200).json({ remarks });
+    const remarks = await Remark.find({ student_id: studentId })
+      .populate('recorded_by')
+      .sort({ created_at: -1 });
+      
+    const formattedRemarks = remarks.map(r => ({
+      ...r._doc,
+      id: r._id,
+      incharge_name: r.recorded_by ? r.recorded_by.name : 'Unknown'
+    }));
+    
+    res.status(200).json({ remarks: formattedRemarks });
   } catch (error) {
     console.error('Fetch student remarks error:', error);
     res.status(500).json({ message: 'Internal server error.' });
@@ -43,42 +47,33 @@ export const recordRemark = async (req, res) => {
       return res.status(400).json({ message: 'Register number and remark text are required.' });
     }
 
-    let sId = student_id;
-    let studentEmail = null;
-    let studentName = null;
-
-    if (!sId) {
-      const [students] = await pool.query('SELECT * FROM students WHERE register_number = ?', [register_number]);
-      if (students.length === 0) {
-        return res.status(404).json({ message: 'Student not found.' });
-      }
-      sId = students[0].id;
-      studentEmail = students[0].email;
-      studentName = students[0].name;
+    let student = null;
+    if (!student_id) {
+      student = await Student.findOne({ register_number });
+      if (!student) return res.status(404).json({ message: 'Student not found.' });
     } else {
-      const [students] = await pool.query('SELECT * FROM students WHERE id = ?', [sId]);
-      if (students.length > 0) {
-        studentEmail = students[0].email;
-        studentName = students[0].name;
-      }
+      student = await Student.findById(student_id);
     }
+    
+    if (!student) return res.status(404).json({ message: 'Student not found.' });
 
-    await pool.query(
-      'INSERT INTO remarks (student_id, remark_text, recorded_by) VALUES (?, ?, ?)',
-      [sId, remark_text, recorded_by]
-    );
+    await Remark.create({
+      student_id: student._id,
+      remark_text,
+      recorded_by
+    });
 
     // Send email notification
-    if (studentEmail) {
+    if (student.email) {
       try {
         const gmail = createGmailClient();
         const subject = 'New Disciplinary Remark Recorded - DisciplineX';
         const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
-        const bodyText = `Dear ${studentName},\n\nA new disciplinary remark has been recorded on your profile.\n\nRemark Details:\n"${remark_text}"\n\nPlease check the portal or contact your department for more details.\n\nRegards,\nModern Institute College`;
+        const bodyText = `Dear ${student.name},\n\nA new disciplinary remark has been recorded on your profile.\n\nRemark Details:\n"${remark_text}"\n\nPlease check the portal or contact your department for more details.\n\nRegards,\nModern Institute College`;
         
         const messageParts = [
           `From: ${process.env.GMAIL_EMAIL}`,
-          `To: ${studentEmail}`,
+          `To: ${student.email}`,
           'Content-Type: text/plain; charset=utf-8',
           'MIME-Version: 1.0',
           `Subject: ${utf8Subject}`,
@@ -120,56 +115,65 @@ export const getRemarksHistory = async (req, res) => {
     const userId     = req.user.id;
     const userDept   = department || req.user.department;
 
-    let dateCondition = 'DATE(r.created_at) = ?';
-    let dateParams = [date || new Date().toISOString().slice(0, 10)];
-
+    let dateQuery = {};
+    const d = date || new Date().toISOString().slice(0, 10);
+    
     if (startDate && endDate) {
-      dateCondition = 'DATE(r.created_at) BETWEEN ? AND ?';
-      dateParams = [startDate, endDate];
-    }
-
-    let queryStr = `
-      SELECT r.*, u.name as incharge_name, s.name, s.register_number, s.course, s.department, s.academic_year, s.semester, s.section 
-      FROM remarks r 
-      JOIN students s ON r.student_id = s.id 
-      LEFT JOIN users u ON r.recorded_by = u.id
-      WHERE ${dateCondition}
-    `;
-    const queryParams = [...dateParams];
-
-    if (userRole === 'HOD') {
-      if (userDept) {
-        queryStr += ' AND s.department = ?';
-        queryParams.push(userDept);
-      }
+      dateQuery = {
+        $gte: new Date(`${startDate}T00:00:00.000Z`),
+        $lte: new Date(`${endDate}T23:59:59.999Z`)
+      };
     } else {
-      queryStr += ' AND r.recorded_by = ?';
-      queryParams.push(userId);
+      dateQuery = {
+        $gte: new Date(`${d}T00:00:00.000Z`),
+        $lte: new Date(`${d}T23:59:59.999Z`)
+      };
     }
 
-    // Apply additional filters
-    if (year) {
-      queryStr += ' AND s.academic_year = ?';
-      queryParams.push(year);
-    }
-    if (semester) {
-      queryStr += ' AND s.semester = ?';
-      queryParams.push(semester);
-    }
-    if (section) {
-      queryStr += ' AND s.section = ?';
-      queryParams.push(section);
+    // First filter students
+    let studentFilter = {};
+    if (userRole === 'HOD' && userDept) studentFilter.department = userDept;
+    if (year) studentFilter.academic_year = year;
+    if (semester) studentFilter.semester = semester;
+    if (section) studentFilter.section = section;
+    
+    const students = await Student.find(studentFilter).select('_id name register_number course department academic_year semester section');
+    const studentIds = students.map(s => s._id);
+
+    // Now query remarks
+    let remarkQuery = {
+      created_at: dateQuery,
+      student_id: { $in: studentIds }
+    };
+    
+    if (userRole !== 'HOD') {
+      remarkQuery.recorded_by = userId;
     }
 
-    // Add ordering
-    queryStr += ' ORDER BY r.created_at DESC';
+    const remarks = await Remark.find(remarkQuery)
+      .populate('recorded_by')
+      .sort({ created_at: -1 });
 
-    const [rows] = await pool.query(queryStr, queryParams);
+    const formattedRemarks = remarks.map(r => {
+      const student = students.find(s => s._id.toString() === r.student_id.toString());
+      return {
+        ...r._doc,
+        id: r._id,
+        incharge_name: r.recorded_by ? r.recorded_by.name : 'Unknown',
+        name: student ? student.name : 'Unknown',
+        register_number: student ? student.register_number : 'Unknown',
+        course: student ? student.course : 'Unknown',
+        department: student ? student.department : 'Unknown',
+        academic_year: student ? student.academic_year : 'Unknown',
+        semester: student ? student.semester : 'Unknown',
+        section: student ? student.section : 'Unknown'
+      };
+    });
 
     res.status(200).json({
       date: date || (startDate && endDate ? `${startDate} to ${endDate}` : new Date().toISOString().slice(0, 10)),
-      total: rows.length,
-      records: rows
+      total: formattedRemarks.length,
+      records: formattedRemarks
     });
   } catch (error) {
     console.error('Fetch remarks history error:', error);

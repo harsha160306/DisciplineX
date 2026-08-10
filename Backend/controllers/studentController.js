@@ -1,13 +1,18 @@
-import pool from '../db.js';
+import Student from '../models/Student.js';
+import Remark from '../models/Remark.js';
+import ScannedIdCard from '../models/ScannedIdCard.js';
 
 export const getStudentByRegisterNumber = async (req, res) => {
   try {
     const { registerNumber } = req.params;
-    const searchTerm = `%${registerNumber}%`;
-    const [students] = await pool.query(
-      'SELECT * FROM students WHERE register_number = ? OR name LIKE ?',
-      [registerNumber, searchTerm]
-    );
+    
+    // Exact match on register number OR partial match on name
+    const students = await Student.find({
+      $or: [
+        { register_number: registerNumber },
+        { name: { $regex: new RegExp(registerNumber, 'i') } }
+      ]
+    });
 
     if (students.length === 0) {
       return res.status(404).json({ message: 'Student not found.' });
@@ -15,16 +20,17 @@ export const getStudentByRegisterNumber = async (req, res) => {
     
     const student = students[0];
 
-    const [remarks] = await pool.query(
-      `SELECT r.*, u.name as incharge_name 
-       FROM remarks r 
-       LEFT JOIN users u ON r.recorded_by = u.id 
-       WHERE r.student_id = ? 
-       ORDER BY r.created_at DESC`,
-      [student.id]
-    );
+    const remarks = await Remark.find({ student_id: student._id })
+      .populate('recorded_by')
+      .sort({ created_at: -1 });
 
-    res.status(200).json({ student, remarks });
+    const formattedRemarks = remarks.map(r => ({
+      ...r._doc,
+      id: r._id,
+      incharge_name: r.recorded_by ? r.recorded_by.name : 'Unknown'
+    }));
+
+    res.status(200).json({ student: { ...student._doc, id: student._id }, remarks: formattedRemarks });
   } catch (error) {
     console.error('Fetch student error:', error);
     res.status(500).json({ message: 'Internal server error.' });
@@ -39,12 +45,9 @@ export const filterStudents = async (req, res) => {
       return res.status(400).json({ message: 'Department and academic_year are required parameters.' });
     }
 
-    const [students] = await pool.query(
-      'SELECT * FROM students WHERE department = ? AND academic_year = ?',
-      [department, academic_year]
-    );
+    const students = await Student.find({ department, academic_year });
 
-    res.status(200).json(students);
+    res.status(200).json(students.map(s => ({ ...s._doc, id: s._id })));
   } catch (error) {
     console.error('Filter students error:', error);
     res.status(500).json({ message: 'Internal server error.' });
@@ -59,21 +62,27 @@ export const registerStudent = async (req, res) => {
       return res.status(400).json({ message: 'Required fields: Register number, name, course, department, academic year, validity.' });
     }
 
-    const [existing] = await pool.query('SELECT * FROM students WHERE register_number = ?', [register_number]);
-    if (existing.length > 0) {
-      return res.status(400).json({ message: 'Registration number already exists.' });
+    try {
+      await Student.create({
+        register_number, name, course, department, academic_year, validity, 
+        dob: dob || null, 
+        blood_group: blood_group || '', 
+        address: address || '', 
+        section: '-', 
+        semester: '-', 
+        email: email || '', 
+        phone: phone || '', 
+        photo_url: photo_url || null
+      });
+      res.status(201).json({ message: 'Student registered successfully.' });
+    } catch (dbError) {
+      if (dbError.code === 11000) {
+        return res.status(400).json({ message: 'Registration number already exists.' });
+      }
+      throw dbError;
     }
 
-    await pool.query(
-      'INSERT INTO students (register_number, name, course, department, academic_year, validity, dob, blood_group, address, section, semester, email, phone, photo_url) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [register_number, name, course, department, academic_year, validity, dob || null, blood_group || '', address || '', '-', '-', email || '', phone || '', photo_url || null]
-    );
-
-    res.status(201).json({ message: 'Student registered successfully.' });
   } catch (error) {
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(400).json({ message: 'Registration number already exists.' });
-    }
     console.error('Register student error:', error);
     res.status(500).json({ message: 'Internal server error.' });
   }
@@ -84,27 +93,37 @@ export const getRepeatOffenders = async (req, res) => {
     const userRole = req.user.role;
     const userDept = req.user.department;
 
-    let queryStr = `
-      SELECT s.id, s.name, s.register_number, s.department, s.photo_url, count(r.id) as remark_count
-      FROM students s
-      JOIN remarks r ON s.id = r.student_id
-    `;
-    let queryParams = [];
-
-    if (userRole === 'HOD') {
-      queryStr += ' WHERE s.department = ?';
-      queryParams.push(userDept);
+    let studentFilter = {};
+    if (userRole === 'HOD' && userDept) {
+      studentFilter.department = userDept;
     }
 
-    queryStr += `
-      GROUP BY s.id
-      HAVING remark_count > 1
-      ORDER BY remark_count DESC
-      LIMIT 20
-    `;
+    // Find all students in department (or all students if Admin)
+    const students = await Student.find(studentFilter);
+    const studentIds = students.map(s => s._id);
 
-    const [rows] = await pool.query(queryStr, queryParams);
-    res.status(200).json(rows);
+    // Aggregate remarks for these students
+    const repeatOffendersRaw = await Remark.aggregate([
+      { $match: { student_id: { $in: studentIds } } },
+      { $group: { _id: "$student_id", remark_count: { $sum: 1 } } },
+      { $match: { remark_count: { $gt: 1 } } },
+      { $sort: { remark_count: -1 } },
+      { $limit: 20 }
+    ]);
+
+    const repeatOffenders = repeatOffendersRaw.map(r => {
+      const student = students.find(s => s._id.toString() === r._id.toString());
+      return {
+        id: student ? student._id : null,
+        name: student ? student.name : 'Unknown',
+        register_number: student ? student.register_number : 'Unknown',
+        department: student ? student.department : 'Unknown',
+        photo_url: student ? student.photo_url : null,
+        remark_count: r.remark_count
+      };
+    }).filter(r => r.id !== null);
+
+    res.status(200).json(repeatOffenders);
   } catch (error) {
     console.error('Fetch repeat offenders error:', error);
     res.status(500).json({ message: 'Internal server error.' });
@@ -119,10 +138,9 @@ export const saveScannedIdCard = async (req, res) => {
       return res.status(400).json({ message: 'Required fields: Register number, name, branch.' });
     }
 
-    await pool.query(
-      'INSERT INTO scanned_id_cards (register_number, name, branch) VALUES (?, ?, ?)',
-      [register_number, name, branch]
-    );
+    await ScannedIdCard.create({
+      register_number, name, branch
+    });
 
     res.status(201).json({ message: 'Scanned ID card saved successfully.' });
   } catch (error) {

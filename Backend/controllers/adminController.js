@@ -1,15 +1,22 @@
-import pool from '../db.js';
+import User from '../models/User.js';
+import Department from '../models/Department.js';
+import Student from '../models/Student.js';
+import Remark from '../models/Remark.js';
+import ActivityLog from '../models/ActivityLog.js';
+import SystemSetting from '../models/SystemSetting.js';
 
-// Helper to log administrative activities
 const recordActivity = async (userName, userRole, action) => {
   try {
     const now = new Date();
     const date = now.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }).replace(/ /g, '-');
     const time = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    await pool.query(
-      'INSERT INTO activity_logs (user_name, user_role, action, date, time) VALUES (?, ?, ?, ?, ?)',
-      [userName, userRole, action, date, time]
-    );
+    await ActivityLog.create({
+      user_name: userName,
+      user_role: userRole,
+      action,
+      date,
+      time
+    });
   } catch (err) {
     console.error('Failed to log activity:', err);
   }
@@ -19,8 +26,8 @@ const recordActivity = async (userName, userRole, action) => {
 
 export const getHODs = async (req, res) => {
   try {
-    const [hods] = await pool.query("SELECT id, username, name, department, phone, employee_id, email, status, designation FROM users WHERE role = 'HOD'");
-    res.status(200).json(hods);
+    const hods = await User.find({ role: 'HOD' }).select('-password');
+    res.status(200).json(hods.map(h => ({ ...h._doc, id: h._id })));
   } catch (error) {
     console.error('getHODs error:', error);
     res.status(500).json({ message: 'Internal server error.' });
@@ -34,19 +41,19 @@ export const createHOD = async (req, res) => {
       return res.status(400).json({ message: 'Username, password, name and department are required.' });
     }
 
-    await pool.query(
-      'INSERT INTO users (username, password, role, name, department, phone, employee_id, email, status, designation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [username, password, 'HOD', name, department, phone || '', employee_id || '', email || '', 'Active', 'HOD']
-    );
+    try {
+      await User.create({
+        username, password, role: 'HOD', name, department, phone: phone || '', employee_id: employee_id || '', email: email || '', status: 'Active', designation: 'HOD'
+      });
+    } catch (dbErr) {
+      if (dbErr.code === 11000) return res.status(409).json({ message: 'Username already exists.' });
+      throw dbErr;
+    }
 
     await recordActivity(req.user.name, req.user.role, `Added HOD: ${name} (${department})`);
-
     res.status(201).json({ message: 'HOD account created successfully.' });
   } catch (error) {
     console.error('createHOD error:', error);
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({ message: 'Username already exists.' });
-    }
     res.status(500).json({ message: 'Internal server error.' });
   }
 };
@@ -55,22 +62,12 @@ export const updateHOD = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, department, phone, employee_id, email } = req.body;
-    if (!name || !department) {
-      return res.status(400).json({ message: 'Name and department are required.' });
-    }
+    if (!name || !department) return res.status(400).json({ message: 'Name and department are required.' });
 
-    const [existing] = await pool.query("SELECT * FROM users WHERE id = ? AND role = 'HOD'", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'HOD not found.' });
-    }
-
-    await pool.query(
-      'UPDATE users SET name = ?, email = ?, phone = ?, employee_id = ?, department = ? WHERE id = ? AND role = ?',
-      [name, email || '', phone || '', employee_id || '', department, id, 'HOD']
-    );
+    const updated = await User.findOneAndUpdate({ _id: id, role: 'HOD' }, { name, department, phone: phone || '', employee_id: employee_id || '', email: email || '' }, { new: true });
+    if (!updated) return res.status(404).json({ message: 'HOD not found.' });
 
     await recordActivity(req.user.name, req.user.role, `Updated HOD details: ${name}`);
-
     res.status(200).json({ message: 'HOD details updated successfully.' });
   } catch (error) {
     console.error('updateHOD error:', error);
@@ -81,14 +78,10 @@ export const updateHOD = async (req, res) => {
 export const deleteHOD = async (req, res) => {
   try {
     const { id } = req.params;
-    const [existing] = await pool.query("SELECT * FROM users WHERE id = ? AND role = 'HOD'", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'HOD not found.' });
-    }
+    const deleted = await User.findOneAndDelete({ _id: id, role: 'HOD' });
+    if (!deleted) return res.status(404).json({ message: 'HOD not found.' });
 
-    await pool.query("DELETE FROM users WHERE id = ? AND role = 'HOD'", [id]);
-    await recordActivity(req.user.name, req.user.role, `Deleted HOD account: ${existing[0].name}`);
-
+    await recordActivity(req.user.name, req.user.role, `Deleted HOD account: ${deleted.name}`);
     res.status(200).json({ message: 'HOD account deleted successfully.' });
   } catch (error) {
     console.error('deleteHOD error:', error);
@@ -100,18 +93,12 @@ export const resetHODPassword = async (req, res) => {
   try {
     const { id } = req.params;
     const { password } = req.body;
-    if (!password) {
-      return res.status(400).json({ message: 'New password is required.' });
-    }
+    if (!password) return res.status(400).json({ message: 'New password is required.' });
 
-    const [existing] = await pool.query("SELECT * FROM users WHERE id = ? AND role = 'HOD'", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'HOD not found.' });
-    }
+    const updated = await User.findOneAndUpdate({ _id: id, role: 'HOD' }, { password });
+    if (!updated) return res.status(404).json({ message: 'HOD not found.' });
 
-    await pool.query("UPDATE users SET password = ? WHERE id = ? AND role = 'HOD'", [password, id]);
-    await recordActivity(req.user.name, req.user.role, `Reset password for HOD: ${existing[0].name}`);
-
+    await recordActivity(req.user.name, req.user.role, `Reset password for HOD: ${updated.name}`);
     res.status(200).json({ message: 'HOD password reset successfully.' });
   } catch (error) {
     console.error('resetHODPassword error:', error);
@@ -122,19 +109,13 @@ export const resetHODPassword = async (req, res) => {
 export const toggleHODStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body; // 'Active' or 'Inactive'
-    if (!status) {
-      return res.status(400).json({ message: 'Status is required.' });
-    }
+    const { status } = req.body;
+    if (!status) return res.status(400).json({ message: 'Status is required.' });
 
-    const [existing] = await pool.query("SELECT * FROM users WHERE id = ? AND role = 'HOD'", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'HOD not found.' });
-    }
+    const updated = await User.findOneAndUpdate({ _id: id, role: 'HOD' }, { status });
+    if (!updated) return res.status(404).json({ message: 'HOD not found.' });
 
-    await pool.query("UPDATE users SET status = ? WHERE id = ? AND role = 'HOD'", [status, id]);
-    await recordActivity(req.user.name, req.user.role, `${status === 'Active' ? 'Activated' : 'Deactivated'} HOD account: ${existing[0].name}`);
-
+    await recordActivity(req.user.name, req.user.role, `${status === 'Active' ? 'Activated' : 'Deactivated'} HOD account: ${updated.name}`);
     res.status(200).json({ message: `HOD status updated to ${status}.` });
   } catch (error) {
     console.error('toggleHODStatus error:', error);
@@ -146,8 +127,8 @@ export const toggleHODStatus = async (req, res) => {
 
 export const getIncharges = async (req, res) => {
   try {
-    const [incharges] = await pool.query("SELECT id, username, name, department, phone, employee_id, email, status, designation FROM users WHERE role = 'Incharge'");
-    res.status(200).json(incharges);
+    const incharges = await User.find({ role: 'Incharge' }).select('-password');
+    res.status(200).json(incharges.map(i => ({ ...i._doc, id: i._id })));
   } catch (error) {
     console.error('getIncharges error:', error);
     res.status(500).json({ message: 'Internal server error.' });
@@ -157,23 +138,21 @@ export const getIncharges = async (req, res) => {
 export const createIncharge = async (req, res) => {
   try {
     const { username, password, name, department, phone, employee_id, email, designation } = req.body;
-    if (!username || !password || !name || !department) {
-      return res.status(400).json({ message: 'Username, password, name and department are required.' });
+    if (!username || !password || !name || !department) return res.status(400).json({ message: 'Username, password, name and department are required.' });
+
+    try {
+      await User.create({
+        username, password, role: 'Incharge', name, department, phone: phone || '', employee_id: employee_id || '', email: email || '', status: 'Active', designation: designation || 'Discipline Incharge'
+      });
+    } catch (dbErr) {
+      if (dbErr.code === 11000) return res.status(409).json({ message: 'Username already exists.' });
+      throw dbErr;
     }
 
-    await pool.query(
-      'INSERT INTO users (username, password, role, name, department, phone, employee_id, email, status, designation) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-      [username, password, 'Incharge', name, department, phone || '', employee_id || '', email || '', 'Active', designation || 'Discipline Incharge']
-    );
-
     await recordActivity(req.user.name, req.user.role, `Added Incharge: ${name} (${department})`);
-
     res.status(201).json({ message: 'Incharge account created successfully.' });
   } catch (error) {
     console.error('createIncharge error:', error);
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({ message: 'Username already exists.' });
-    }
     res.status(500).json({ message: 'Internal server error.' });
   }
 };
@@ -182,22 +161,12 @@ export const updateIncharge = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, department, phone, employee_id, email, designation } = req.body;
-    if (!name || !department) {
-      return res.status(400).json({ message: 'Name and department are required.' });
-    }
+    if (!name || !department) return res.status(400).json({ message: 'Name and department are required.' });
 
-    const [existing] = await pool.query("SELECT * FROM users WHERE id = ? AND role = 'Incharge'", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'Incharge not found.' });
-    }
-
-    await pool.query(
-      'UPDATE users SET name = ?, email = ?, phone = ?, employee_id = ?, department = ?, designation = ? WHERE id = ? AND role = ?',
-      [name, email || '', phone || '', employee_id || '', department, designation || 'Discipline Incharge', id, 'Incharge']
-    );
+    const updated = await User.findOneAndUpdate({ _id: id, role: 'Incharge' }, { name, department, phone: phone || '', employee_id: employee_id || '', email: email || '', designation: designation || 'Discipline Incharge' });
+    if (!updated) return res.status(404).json({ message: 'Incharge not found.' });
 
     await recordActivity(req.user.name, req.user.role, `Updated Incharge details: ${name}`);
-
     res.status(200).json({ message: 'Incharge details updated successfully.' });
   } catch (error) {
     console.error('updateIncharge error:', error);
@@ -208,14 +177,10 @@ export const updateIncharge = async (req, res) => {
 export const deleteIncharge = async (req, res) => {
   try {
     const { id } = req.params;
-    const [existing] = await pool.query("SELECT * FROM users WHERE id = ? AND role = 'Incharge'", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'Incharge not found.' });
-    }
+    const deleted = await User.findOneAndDelete({ _id: id, role: 'Incharge' });
+    if (!deleted) return res.status(404).json({ message: 'Incharge not found.' });
 
-    await pool.query("DELETE FROM users WHERE id = ? AND role = 'Incharge'", [id]);
-    await recordActivity(req.user.name, req.user.role, `Deleted Incharge account: ${existing[0].name}`);
-
+    await recordActivity(req.user.name, req.user.role, `Deleted Incharge account: ${deleted.name}`);
     res.status(200).json({ message: 'Incharge account deleted successfully.' });
   } catch (error) {
     console.error('deleteIncharge error:', error);
@@ -227,18 +192,12 @@ export const resetInchargePassword = async (req, res) => {
   try {
     const { id } = req.params;
     const { password } = req.body;
-    if (!password) {
-      return res.status(400).json({ message: 'New password is required.' });
-    }
+    if (!password) return res.status(400).json({ message: 'New password is required.' });
 
-    const [existing] = await pool.query("SELECT * FROM users WHERE id = ? AND role = 'Incharge'", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'Incharge not found.' });
-    }
+    const updated = await User.findOneAndUpdate({ _id: id, role: 'Incharge' }, { password });
+    if (!updated) return res.status(404).json({ message: 'Incharge not found.' });
 
-    await pool.query("UPDATE users SET password = ? WHERE id = ? AND role = 'Incharge'", [password, id]);
-    await recordActivity(req.user.name, req.user.role, `Reset password for Incharge: ${existing[0].name}`);
-
+    await recordActivity(req.user.name, req.user.role, `Reset password for Incharge: ${updated.name}`);
     res.status(200).json({ message: 'Incharge password reset successfully.' });
   } catch (error) {
     console.error('resetInchargePassword error:', error);
@@ -250,18 +209,12 @@ export const toggleInchargeStatus = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
-    if (!status) {
-      return res.status(400).json({ message: 'Status is required.' });
-    }
+    if (!status) return res.status(400).json({ message: 'Status is required.' });
 
-    const [existing] = await pool.query("SELECT * FROM users WHERE id = ? AND role = 'Incharge'", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'Incharge not found.' });
-    }
+    const updated = await User.findOneAndUpdate({ _id: id, role: 'Incharge' }, { status });
+    if (!updated) return res.status(404).json({ message: 'Incharge not found.' });
 
-    await pool.query("UPDATE users SET status = ? WHERE id = ? AND role = 'Incharge'", [status, id]);
-    await recordActivity(req.user.name, req.user.role, `${status === 'Active' ? 'Activated' : 'Deactivated'} Incharge account: ${existing[0].name}`);
-
+    await recordActivity(req.user.name, req.user.role, `${status === 'Active' ? 'Activated' : 'Deactivated'} Incharge account: ${updated.name}`);
     res.status(200).json({ message: `Incharge status updated to ${status}.` });
   } catch (error) {
     console.error('toggleInchargeStatus error:', error);
@@ -273,22 +226,15 @@ export const toggleInchargeStatus = async (req, res) => {
 
 export const getDepartments = async (req, res) => {
   try {
-    const [depts] = await pool.query("SELECT * FROM departments");
-    const [allUsers] = await pool.query("SELECT id, name, role, department FROM users");
-    const [allStudents] = await pool.query("SELECT id, department FROM students");
+    const depts = await Department.find();
+    const allUsers = await User.find({ role: { $in: ['HOD', 'Incharge'] } });
+    const allStudents = await Student.find();
 
     const detailedDepts = depts.map(d => {
       const hod = allUsers.find(u => u.role === 'HOD' && u.department === d.name);
       const totalIncharges = allUsers.filter(u => u.role === 'Incharge' && u.department === d.name).length;
       const totalStudents = allStudents.filter(s => s.department === d.name).length;
-
-      return {
-        id: d.id,
-        name: d.name,
-        hod: hod ? hod.name : 'Not Assigned',
-        totalStudents,
-        totalIncharges
-      };
+      return { id: d._id, name: d.name, hod: hod ? hod.name : 'Not Assigned', totalStudents, totalIncharges };
     });
 
     res.status(200).json(detailedDepts);
@@ -301,19 +247,19 @@ export const getDepartments = async (req, res) => {
 export const createDepartment = async (req, res) => {
   try {
     const { name } = req.body;
-    if (!name) {
-      return res.status(400).json({ message: 'Department name is required.' });
+    if (!name) return res.status(400).json({ message: 'Department name is required.' });
+
+    try {
+      await Department.create({ name });
+    } catch (dbErr) {
+      if (dbErr.code === 11000) return res.status(409).json({ message: 'Department already exists.' });
+      throw dbErr;
     }
 
-    await pool.query("INSERT INTO departments (name) VALUES (?)", [name]);
     await recordActivity(req.user.name, req.user.role, `Created department: ${name}`);
-
     res.status(201).json({ message: 'Department created successfully.' });
   } catch (error) {
     console.error('createDepartment error:', error);
-    if (error.code === 'ER_DUP_ENTRY') {
-      return res.status(409).json({ message: 'Department already exists.' });
-    }
     res.status(500).json({ message: 'Internal server error.' });
   }
 };
@@ -322,18 +268,12 @@ export const updateDepartment = async (req, res) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
-    if (!name) {
-      return res.status(400).json({ message: 'Department name is required.' });
-    }
+    if (!name) return res.status(400).json({ message: 'Department name is required.' });
 
-    const [depts] = await pool.query("SELECT * FROM departments WHERE id = ?", [id]);
-    if (depts.length === 0) {
-      return res.status(404).json({ message: 'Department not found.' });
-    }
+    const updated = await Department.findByIdAndUpdate(id, { name });
+    if (!updated) return res.status(404).json({ message: 'Department not found.' });
 
-    await pool.query("UPDATE departments SET name = ? WHERE id = ?", [name, id]);
-    await recordActivity(req.user.name, req.user.role, `Updated department: ${depts[0].name} to ${name}`);
-
+    await recordActivity(req.user.name, req.user.role, `Updated department: ${updated.name} to ${name}`);
     res.status(200).json({ message: 'Department updated successfully.' });
   } catch (error) {
     console.error('updateDepartment error:', error);
@@ -344,14 +284,10 @@ export const updateDepartment = async (req, res) => {
 export const deleteDepartment = async (req, res) => {
   try {
     const { id } = req.params;
-    const [depts] = await pool.query("SELECT * FROM departments WHERE id = ?", [id]);
-    if (depts.length === 0) {
-      return res.status(404).json({ message: 'Department not found.' });
-    }
+    const deleted = await Department.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ message: 'Department not found.' });
 
-    await pool.query("DELETE FROM departments WHERE id = ?", [id]);
-    await recordActivity(req.user.name, req.user.role, `Deleted department: ${depts[0].name}`);
-
+    await recordActivity(req.user.name, req.user.role, `Deleted department: ${deleted.name}`);
     res.status(200).json({ message: 'Department deleted successfully.' });
   } catch (error) {
     console.error('deleteDepartment error:', error);
@@ -364,21 +300,16 @@ export const deleteDepartment = async (req, res) => {
 export const getStudents = async (req, res) => {
   try {
     const { search, department } = req.query;
-    const [students] = await pool.query("SELECT * FROM students");
-
-    let filtered = students;
+    
+    let query = {};
+    if (department) query.department = department;
     if (search) {
-      const q = search.toLowerCase();
-      filtered = filtered.filter(s =>
-        s.name.toLowerCase().includes(q) ||
-        s.register_number.toLowerCase().includes(q)
-      );
-    }
-    if (department) {
-      filtered = filtered.filter(s => s.department === department);
+      const regex = new RegExp(search, 'i');
+      query.$or = [{ name: regex }, { register_number: regex }];
     }
 
-    res.status(200).json(filtered);
+    const students = await Student.find(query);
+    res.status(200).json(students.map(s => ({ ...s._doc, id: s._id })));
   } catch (error) {
     console.error('getStudents error:', error);
     res.status(500).json({ message: 'Internal server error.' });
@@ -389,22 +320,12 @@ export const updateStudent = async (req, res) => {
   try {
     const { id } = req.params;
     const { name, course, department, academic_year, section, semester, email, phone, dob, blood_group, address } = req.body;
-    if (!name || !department || !academic_year || !section || !semester) {
-      return res.status(400).json({ message: 'Required fields missing.' });
-    }
+    if (!name || !department || !academic_year || !section || !semester) return res.status(400).json({ message: 'Required fields missing.' });
 
-    const [existing] = await pool.query("SELECT * FROM students WHERE id = ?", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'Student not found.' });
-    }
+    const updated = await Student.findByIdAndUpdate(id, { name, course: course || 'B.Tech', department, academic_year, section, semester, email: email || '', phone: phone || '', dob: dob || null, blood_group: blood_group || '', address: address || '' });
+    if (!updated) return res.status(404).json({ message: 'Student not found.' });
 
-    await pool.query(
-      'UPDATE students SET name = ?, course = ?, department = ?, academic_year = ?, section = ?, semester = ?, email = ?, phone = ?, dob = ?, blood_group = ?, address = ? WHERE id = ?',
-      [name, course || 'B.Tech', department, academic_year, section, semester, email || '', phone || '', dob || null, blood_group || '', address || '', id]
-    );
-
-    await recordActivity(req.user.name, req.user.role, `Updated student details: ${name} (${existing[0].register_number})`);
-
+    await recordActivity(req.user.name, req.user.role, `Updated student details: ${name} (${updated.register_number})`);
     res.status(200).json({ message: 'Student details updated successfully.' });
   } catch (error) {
     console.error('updateStudent error:', error);
@@ -415,14 +336,10 @@ export const updateStudent = async (req, res) => {
 export const deleteStudent = async (req, res) => {
   try {
     const { id } = req.params;
-    const [existing] = await pool.query("SELECT * FROM students WHERE id = ?", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'Student not found.' });
-    }
+    const deleted = await Student.findByIdAndDelete(id);
+    if (!deleted) return res.status(404).json({ message: 'Student not found.' });
 
-    await pool.query("DELETE FROM students WHERE id = ?", [id]);
-    await recordActivity(req.user.name, req.user.role, `Deleted student: ${existing[0].name} (${existing[0].register_number})`);
-
+    await recordActivity(req.user.name, req.user.role, `Deleted student: ${deleted.name} (${deleted.register_number})`);
     res.status(200).json({ message: 'Student deleted successfully.' });
   } catch (error) {
     console.error('deleteStudent error:', error);
@@ -436,36 +353,36 @@ export const getRemarks = async (req, res) => {
   try {
     const { department, academic_year, month, student, remark_category } = req.query;
 
-    const [remarks] = await pool.query(`
-      SELECT r.id, r.student_id, r.remark_text, r.recorded_by, r.created_at,
-             s.name as student_name, s.register_number, s.department, s.academic_year, s.photo_url,
-             u.name as recorder_name, u.role as recorder_role
-      FROM remarks r
-      JOIN students s ON r.student_id = s.id
-      LEFT JOIN users u ON r.recorded_by = u.id
-      ORDER BY r.created_at DESC
-    `);
-
-    let filtered = remarks;
-    if (department) {
-      filtered = filtered.filter(r => r.department === department);
-    }
-    if (academic_year) {
-      filtered = filtered.filter(r => r.academic_year === academic_year);
-    }
+    let query = {};
+    if (remark_category) query.remark_text = { $regex: new RegExp(`^${remark_category}$`, 'i') };
     if (month) {
-      // month is in YYYY-MM form
-      filtered = filtered.filter(r => r.created_at.startsWith(month));
+      const startDate = new Date(`${month}-01`);
+      const endDate = new Date(startDate.getFullYear(), startDate.getMonth() + 1, 0);
+      query.created_at = { $gte: startDate, $lte: endDate };
     }
+
+    let remarks = await Remark.find(query).populate('student_id').populate('recorded_by').sort({ created_at: -1 });
+
+    let filtered = remarks.map(r => ({
+      id: r._id,
+      student_id: r.student_id ? r.student_id._id : null,
+      remark_text: r.remark_text,
+      recorded_by: r.recorded_by ? r.recorded_by._id : null,
+      created_at: r.created_at,
+      student_name: r.student_id ? r.student_id.name : 'Unknown',
+      register_number: r.student_id ? r.student_id.register_number : 'Unknown',
+      department: r.student_id ? r.student_id.department : 'Unknown',
+      academic_year: r.student_id ? r.student_id.academic_year : 'Unknown',
+      photo_url: r.student_id ? r.student_id.photo_url : null,
+      recorder_name: r.recorded_by ? r.recorded_by.name : 'Unknown',
+      recorder_role: r.recorded_by ? r.recorded_by.role : 'Unknown'
+    }));
+
+    if (department) filtered = filtered.filter(r => r.department === department);
+    if (academic_year) filtered = filtered.filter(r => r.academic_year === academic_year);
     if (student) {
       const q = student.toLowerCase();
-      filtered = filtered.filter(r =>
-        r.student_name.toLowerCase().includes(q) ||
-        r.register_number.toLowerCase().includes(q)
-      );
-    }
-    if (remark_category) {
-      filtered = filtered.filter(r => r.remark_text.toLowerCase() === remark_category.toLowerCase());
+      filtered = filtered.filter(r => r.student_name.toLowerCase().includes(q) || r.register_number.toLowerCase().includes(q));
     }
 
     res.status(200).json(filtered);
@@ -478,14 +395,10 @@ export const getRemarks = async (req, res) => {
 export const deleteRemark = async (req, res) => {
   try {
     const { id } = req.params;
-    const [existing] = await pool.query("SELECT r.*, s.name as student_name FROM remarks r JOIN students s ON r.student_id = s.id WHERE r.id = ?", [id]);
-    if (existing.length === 0) {
-      return res.status(404).json({ message: 'Remark not found.' });
-    }
+    const deleted = await Remark.findByIdAndDelete(id).populate('student_id');
+    if (!deleted) return res.status(404).json({ message: 'Remark not found.' });
 
-    await pool.query("DELETE FROM remarks WHERE id = ?", [id]);
-    await recordActivity(req.user.name, req.user.role, `Deleted remark for student: ${existing[0].student_name}`);
-
+    await recordActivity(req.user.name, req.user.role, `Deleted remark for student: ${deleted.student_id ? deleted.student_id.name : 'Unknown'}`);
     res.status(200).json({ message: 'Remark deleted successfully.' });
   } catch (error) {
     console.error('deleteRemark error:', error);
@@ -497,8 +410,8 @@ export const deleteRemark = async (req, res) => {
 
 export const getActivityLogs = async (req, res) => {
   try {
-    const [logs] = await pool.query("SELECT user_name as user, user_role as role, action, date, time, created_at FROM activity_logs ORDER BY created_at DESC LIMIT 500");
-    res.status(200).json(logs);
+    const logs = await ActivityLog.find().sort({ created_at: -1 }).limit(500);
+    res.status(200).json(logs.map(l => ({ user: l.user_name, role: l.user_role, action: l.action, date: l.date, time: l.time, created_at: l.created_at })));
   } catch (error) {
     console.error('getActivityLogs error:', error);
     res.status(500).json({ message: 'Internal server error.' });
@@ -508,9 +421,7 @@ export const getActivityLogs = async (req, res) => {
 export const createActivityLog = async (req, res) => {
   try {
     const { action } = req.body;
-    if (!action) {
-      return res.status(400).json({ message: 'Action is required.' });
-    }
+    if (!action) return res.status(400).json({ message: 'Action is required.' });
     await recordActivity(req.user.name, req.user.role, action);
     res.status(201).json({ message: 'Activity logged successfully.' });
   } catch (error) {
@@ -523,13 +434,10 @@ export const createActivityLog = async (req, res) => {
 
 export const getSystemSettings = async (req, res) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM system_settings");
+    const rows = await SystemSetting.find();
     const settings = {};
-    rows.forEach(r => {
-      settings[r.setting_key] = r.setting_value;
-    });
+    rows.forEach(r => { settings[r.setting_key] = r.setting_value; });
 
-    // Fallbacks if tables are empty
     res.status(200).json({
       college_name: settings.college_name || 'Modern Institute College',
       college_logo: settings.college_logo || '',
@@ -546,7 +454,6 @@ export const getSystemSettings = async (req, res) => {
 export const updateSystemSettings = async (req, res) => {
   try {
     const { college_name, college_logo, academic_year, remark_categories, password_policy } = req.body;
-
     const updates = {
       college_name: college_name || 'Modern Institute College',
       college_logo: college_logo || '',
@@ -556,15 +463,10 @@ export const updateSystemSettings = async (req, res) => {
     };
 
     for (const key of Object.keys(updates)) {
-      // MySQL upsert query pattern
-      await pool.query(
-        "INSERT INTO system_settings (setting_key, setting_value) VALUES (?, ?) ON DUPLICATE KEY UPDATE setting_value = ?",
-        [key, updates[key], updates[key]]
-      );
+      await SystemSetting.findOneAndUpdate({ setting_key: key }, { setting_value: updates[key] }, { upsert: true });
     }
 
     await recordActivity(req.user.name, req.user.role, 'Updated system settings');
-
     res.status(200).json({ message: 'System settings updated successfully.' });
   } catch (error) {
     console.error('updateSystemSettings error:', error);
@@ -576,62 +478,35 @@ export const updateSystemSettings = async (req, res) => {
 
 export const getAdminAnalytics = async (req, res) => {
   try {
-    const [remarks] = await pool.query(`
-      SELECT r.id, r.remark_text, r.created_at, s.department, s.academic_year
-      FROM remarks r
-      JOIN students s ON r.student_id = s.id
-    `);
-    const [students] = await pool.query("SELECT id FROM students");
-    const [users] = await pool.query("SELECT id, role FROM users");
-    const [depts] = await pool.query("SELECT name FROM departments");
-
-    const totalStudents = students.length;
+    const remarks = await Remark.find().populate('student_id');
+    const totalStudents = await Student.countDocuments();
+    const totalHODs = await User.countDocuments({ role: 'HOD' });
+    const totalIncharges = await User.countDocuments({ role: 'Incharge' });
+    const totalDepartments = await Department.countDocuments();
     const totalRemarks = remarks.length;
-    const totalHODs = users.filter(u => u.role === 'HOD').length;
-    const totalIncharges = users.filter(u => u.role === 'Incharge').length;
 
-    // 1. Remarks by Department (Bar Chart)
     const deptWise = {};
-    depts.forEach(d => { deptWise[d.name] = 0; });
     remarks.forEach(r => {
-      if (deptWise[r.department] !== undefined) {
-        deptWise[r.department]++;
-      } else {
-        deptWise[r.department] = 1;
+      if (r.student_id) {
+        const d = r.student_id.department;
+        deptWise[d] = (deptWise[d] || 0) + 1;
       }
     });
-    const remarksByDeptData = Object.keys(deptWise).map(k => ({
-      name: k,
-      remarks: deptWise[k]
-    }));
+    const remarksByDeptData = Object.keys(deptWise).map(k => ({ name: k, remarks: deptWise[k] }));
 
-    // 2. Remark Categories (Pie Chart)
     const categoryCounts = { 'Late-comer': 0, 'Non-uniform': 0, 'Indiscipline': 0, 'Others': 0 };
     remarks.forEach(r => {
-      if (categoryCounts[r.remark_text] !== undefined) {
-        categoryCounts[r.remark_text]++;
-      } else {
-        categoryCounts['Others']++;
-      }
+      if (categoryCounts[r.remark_text] !== undefined) categoryCounts[r.remark_text]++;
+      else categoryCounts['Others']++;
     });
-    const remarkCategoriesData = Object.keys(categoryCounts).map(k => ({
-      name: k,
-      value: categoryCounts[k]
-    })).filter(c => c.value > 0);
+    const remarkCategoriesData = Object.keys(categoryCounts).map(k => ({ name: k, value: categoryCounts[k] })).filter(c => c.value > 0);
 
-    // 3. Monthly Remarks (Line Chart - Last 6 Months)
-    // Gather month-wise counts
     const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const monthCounts = {};
-    
-    // Initialize last 6 months
     const last6 = [];
     const now = new Date();
     for (let i = 5; i >= 0; i--) {
       const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const mLabel = months[d.getMonth()];
-      const mKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      last6.push({ label: mLabel, key: mKey, remarks: 0 });
+      last6.push({ label: months[d.getMonth()], key: `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`, remarks: 0 });
     }
 
     remarks.forEach(r => {
@@ -641,26 +516,10 @@ export const getAdminAnalytics = async (req, res) => {
       if (bucket) bucket.remarks++;
     });
 
-    const monthlyRemarksData = last6.map(b => ({
-      month: b.label,
-      remarks: b.remarks
-    }));
-
     res.status(200).json({
-      summary: {
-        totalStudents,
-        totalRemarks,
-        totalHODs,
-        totalIncharges,
-        totalDepartments: depts.length
-      },
-      charts: {
-        remarksByDept: remarksByDeptData,
-        remarkCategories: remarkCategoriesData,
-        monthlyRemarks: monthlyRemarksData
-      }
+      summary: { totalStudents, totalRemarks, totalHODs, totalIncharges, totalDepartments },
+      charts: { remarksByDept: remarksByDeptData, remarkCategories: remarkCategoriesData, monthlyRemarks: last6.map(b => ({ month: b.label, remarks: b.remarks })) }
     });
-
   } catch (error) {
     console.error('getAdminAnalytics error:', error);
     res.status(500).json({ message: 'Internal server error.' });
@@ -672,17 +531,10 @@ export const getAdminAnalytics = async (req, res) => {
 export const updateAdminProfile = async (req, res) => {
   try {
     const { name, email, phone } = req.body;
-    if (!name) {
-      return res.status(400).json({ message: 'Name is required.' });
-    }
+    if (!name) return res.status(400).json({ message: 'Name is required.' });
 
-    await pool.query(
-      "UPDATE users SET name = ?, email = ?, phone = ? WHERE id = ? AND role = 'Admin'",
-      [name, email || '', phone || '', req.user.id]
-    );
-
+    await User.findOneAndUpdate({ _id: req.user.id, role: 'Admin' }, { name, email: email || '', phone: phone || '' });
     await recordActivity(req.user.name, req.user.role, 'Updated admin profile details');
-
     res.status(200).json({ message: 'Profile updated successfully.' });
   } catch (error) {
     console.error('updateAdminProfile error:', error);
@@ -693,17 +545,10 @@ export const updateAdminProfile = async (req, res) => {
 export const changeAdminPassword = async (req, res) => {
   try {
     const { password } = req.body;
-    if (!password || password.length < 6) {
-      return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
-    }
+    if (!password || password.length < 6) return res.status(400).json({ message: 'Password must be at least 6 characters long.' });
 
-    await pool.query(
-      "UPDATE users SET password = ? WHERE id = ? AND role = 'Admin'",
-      [password, req.user.id]
-    );
-
+    await User.findOneAndUpdate({ _id: req.user.id, role: 'Admin' }, { password });
     await recordActivity(req.user.name, req.user.role, 'Changed admin password');
-
     res.status(200).json({ message: 'Password changed successfully.' });
   } catch (error) {
     console.error('changeAdminPassword error:', error);
