@@ -19,15 +19,9 @@ export default function DepartmentManagement() {
       const res = await api.get('/admin/departments');
       setDepartments(res.data);
     } catch (err) {
-      console.warn('Backend offline, using fallback department mock data:', err.message);
-      // Seed default departments
-      setDepartments([
-        { id: 1, name: 'CSE', hod: 'Dr. R. Kavitha', totalStudents: 120, totalIncharges: 2 },
-        { id: 2, name: 'ECE', hod: 'Dr. S. Rajkumar', totalStudents: 85, totalIncharges: 1 },
-        { id: 3, name: 'Mechanical', hod: 'Dr. M. Priya', totalStudents: 110, totalIncharges: 0 },
-        { id: 4, name: 'Civil', hod: 'Not Assigned', totalStudents: 0, totalIncharges: 0 },
-        { id: 5, name: 'MBA', hod: 'Not Assigned', totalStudents: 0, totalIncharges: 0 }
-      ]);
+      console.error('Failed to fetch departments:', err);
+      toast.error('Failed to load departments.');
+      setDepartments([]);
     }
   };
 

@@ -32,12 +32,9 @@ export default function InchargeManagement() {
       const res = await api.get('/admin/incharges');
       setIncharges(res.data);
     } catch (err) {
-      console.warn('Backend offline, using fallback mock data:', err.message);
-      setIncharges([
-        { id: 4, name: 'Mr. A. Senthil', employee_id: 'INC001', department: 'CSE', email: 'incharge_cse1@mic.edu', phone: '9500012001', status: 'Active', designation: 'Assistant Professor' },
-        { id: 5, name: 'Ms. B. Divya', employee_id: 'INC002', department: 'CSE', email: 'incharge_cse2@mic.edu', phone: '9500012002', status: 'Active', designation: 'Assistant Professor' },
-        { id: 6, name: 'Mr. C. Rajan', employee_id: 'INC003', department: 'ECE', email: 'incharge_ece1@mic.edu', phone: '9500012003', status: 'Inactive', designation: 'Associate Professor' }
-      ]);
+      console.error('Failed to fetch Incharges:', err);
+      toast.error('Failed to load Incharges.');
+      setIncharges([]);
     }
   };
 

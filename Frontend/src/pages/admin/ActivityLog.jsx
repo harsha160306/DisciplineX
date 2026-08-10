@@ -13,16 +13,8 @@ export default function ActivityLog() {
       const res = await api.get('/admin/logs');
       setLogs(res.data);
     } catch (err) {
-      console.warn('Backend offline, loading mock activity logs:', err.message);
-      setLogs([
-        { user: 'System Admin', role: 'Admin', action: 'System Initialized and mock seeds verified', date: '19-Jul-2026', time: '08:30 AM' },
-        { user: 'System Admin', role: 'Admin', action: 'Added HOD account: Dr. R. Kavitha (CSE)', date: '19-Jul-2026', time: '08:32 AM' },
-        { user: 'System Admin', role: 'Admin', action: 'Added HOD account: Dr. S. Rajkumar (ECE)', date: '19-Jul-2026', time: '08:33 AM' },
-        { user: 'Dr. R. Kavitha', role: 'HOD', action: 'Added Discipline Incharge: Ms. B. Divya', date: '19-Jul-2026', time: '08:42 AM' },
-        { user: 'Ms. B. Divya', role: 'Incharge', action: 'Student registered: Rahul Sharma (2024CS101)', date: '19-Jul-2026', time: '08:50 AM' },
-        { user: 'Ms. B. Divya', role: 'Incharge', action: 'Discipline remark logged: Late-comer for 2024CS101', date: '19-Jul-2026', time: '09:00 AM' },
-        { user: 'System Admin', role: 'Admin', action: 'Exported department report list to PDF', date: '19-Jul-2026', time: '09:12 AM' }
-      ]);
+      console.error('Failed to fetch activity logs:', err);
+      setLogs([]);
     } finally {
       setLoading(false);
     }

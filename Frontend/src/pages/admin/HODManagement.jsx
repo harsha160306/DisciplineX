@@ -31,13 +31,9 @@ export default function HODManagement() {
       const res = await api.get('/admin/hods');
       setHods(res.data);
     } catch (err) {
-      console.warn('Backend offline, using fallback mock data:', err.message);
-      // Seed fallback
-      setHods([
-        { id: 1, name: 'Dr. R. Kavitha', employee_id: 'HOD001', department: 'CSE', email: 'hod_cse@mic.edu', phone: '9500011001', status: 'Active' },
-        { id: 2, name: 'Dr. S. Rajkumar', employee_id: 'HOD002', department: 'ECE', email: 'hod_ece@mic.edu', phone: '9500011002', status: 'Active' },
-        { id: 3, name: 'Dr. M. Priya', employee_id: 'HOD003', department: 'Mechanical', email: 'hod_mech@mic.edu', phone: '9500011003', status: 'Inactive' }
-      ]);
+      console.error('Failed to fetch HODs:', err);
+      toast.error('Failed to load HODs.');
+      setHods([]);
     }
   };
 

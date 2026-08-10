@@ -214,21 +214,7 @@ export default function Registration() {
       if (msg.includes('exists')) {
         toast.error('This Register Number is already registered.');
       } else {
-        // Fallback for mock demo mode
-        setPreviewData({
-          name: name.trim(),
-          registerNumber: registerNumber.trim(),
-          course,
-          branch: branch.trim(),
-          academicYear,
-          validity,
-          dob,
-          bloodGroup,
-          address,
-          phone,
-          photoUrl
-        });
-        toast.success('ID Card Generated (Demo Fallback)!');
+        toast.error('Registration failed. Please try again.');
       }
     } finally {
       setIsSubmitting(false);

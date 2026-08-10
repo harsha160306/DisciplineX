@@ -8,43 +8,6 @@ import { toast } from 'react-hot-toast';
 import api from '../utils/api';
 import { useAppContext } from '../context/AppContext';
 
-/* ── Mock fallback helpers ──────────────────────────────────────────── */
-const MOCK_NAMES = [
-  'Rahul Sharma', 'Priya Patel', 'Sneha Reddy', 'Karan Malhotra',
-  'Anjali Verma', 'Arjun Rao', 'Divya Nair', 'Vikram Singh',
-];
-const REMARK_TYPES = ['Non-uniform', 'Late-comer', 'Indiscipline', 'Others'];
-const INCHARGE_NAMES = {
-  CSE: ['Mr. A. Senthil', 'Ms. B. Divya'],
-  ECE: ['Mr. C. Rajan'],
-  Mechanical: ['Mr. D. Kumar'],
-};
-
-function buildMock(dept) {
-  const prefix = dept ? dept.substring(0, 2).toUpperCase() : 'CS';
-  const count = 15 + Math.floor(Math.random() * 10);
-  const incharges = INCHARGE_NAMES[dept] || ['Incharge Staff'];
-  return Array.from({ length: count }, (_, i) => {
-    const d = new Date();
-    d.setDate(d.getDate() - Math.floor(Math.random() * 7));
-    return {
-      id: 100 + i,
-      student_id: i + 1,
-      name: MOCK_NAMES[i % MOCK_NAMES.length],
-      registerNumber: `2024${prefix}${String(i + 1).padStart(3, '0')}`,
-      register_number: `2024${prefix}${String(i + 1).padStart(3, '0')}`,
-      remark: REMARK_TYPES[i % REMARK_TYPES.length],
-      remark_text: REMARK_TYPES[i % REMARK_TYPES.length],
-      department: dept,
-      academic_year: ['1st Year', '2nd Year', '3rd Year', '4th Year'][i % 4],
-      semester: ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th'][i % 8],
-      section: ['A', 'B', 'C'][i % 3],
-      incharge_name: incharges[i % incharges.length],
-      created_at: d.toISOString(),
-    };
-  });
-}
-
 /* ── Badge styling ──────────────────────────────────────────────────── */
 const REMARK_BADGE = {
   'Non-uniform':  { bg: 'bg-amber-100 dark:bg-amber-900/30',  text: 'text-amber-700 dark:text-amber-300',  icon: 'checkroom' },
@@ -172,8 +135,9 @@ export default function History() {
         throw new Error('Empty dataset');
       }
     } catch (err) {
-      console.warn('API fetch failed, using fallback mock…', err);
-      setRemarkList(buildMock(apiFilters.department || userDept));
+      console.error('API fetch failed:', err);
+      toast.error('Failed to fetch records from database.');
+      setRemarkList([]);
       setDataLoaded(true);
     } finally {
       setIsFetching(false);

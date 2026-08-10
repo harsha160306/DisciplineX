@@ -33,14 +33,9 @@ export default function RemarksManagement() {
       });
       setRemarks(res.data);
     } catch (err) {
-      console.warn('Backend offline, using fallback remarks mock data:', err.message);
-      // Seed default remarks
-      setRemarks([
-        { id: 1, student_id: 1, remark_text: 'Late-comer', recorded_by: 4, created_at: '2026-07-19T09:00:00.000Z', student_name: 'Rahul Sharma', register_number: '2024CS101', department: 'CSE', academic_year: '3rd Year', recorder_name: 'Mr. A. Senthil', recorder_role: 'Incharge' },
-        { id: 2, student_id: 2, remark_text: 'Non-uniform', recorded_by: 5, created_at: '2026-07-18T10:15:00.000Z', student_name: 'Anjali Verma', register_number: '2024ME045', department: 'Mechanical', academic_year: '2nd Year', recorder_name: 'Ms. B. Divya', recorder_role: 'Incharge' },
-        { id: 3, student_id: 1, remark_text: 'Late-comer', recorded_by: 4, created_at: '2026-07-17T09:05:00.000Z', student_name: 'Rahul Sharma', register_number: '2024CS101', department: 'CSE', academic_year: '3rd Year', recorder_name: 'Mr. A. Senthil', recorder_role: 'Incharge' },
-        { id: 4, student_id: 3, remark_text: 'Indiscipline', recorded_by: 2, created_at: '2026-07-15T11:30:00.000Z', student_name: 'Priya Patel', register_number: '2024CS102', department: 'CSE', academic_year: '1st Year', recorder_name: 'Dr. S. Rajkumar', recorder_role: 'HOD' }
-      ]);
+      console.error('Failed to fetch remarks:', err);
+      toast.error('Failed to load remarks.');
+      setRemarks([]);
     } finally {
       setLoading(false);
     }

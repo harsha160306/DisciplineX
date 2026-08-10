@@ -38,13 +38,9 @@ export default function StudentManagement() {
       });
       setStudents(res.data);
     } catch (err) {
-      console.warn('Backend offline, using fallback student mock data:', err.message);
-      // Seed default students
-      setStudents([
-        { id: 1, register_number: '2024CS101', name: 'Rahul Sharma', course: 'B.Tech', department: 'CSE', academic_year: '3rd Year', section: 'A', semester: 'V', email: 'rahul@gmail.com', phone: '9876543210', dob: '2005-07-22', blood_group: 'B+', address: 'Hyderabad, India', photo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBnM-pyl2GLRMVnjxwsCXyp4bZU_dGsSv6BzQCj0OKi8NlhK2UyNps1HU1jaO-RKjb9B_updyWAjRKfBDg572WWob87YdE1z3TdQcV8a2ef1wKEeFrB9sEdd27i_dIOWCyUVlMu7yFK_wIg3BX_KEVleXsL8hvR0fdmFsvCxZPM2qBBvYkaKN8J6PNGNIJVFnkkqqKKD13x4T5B4-oy5GOfVTfsdQ1i_tgyeDusR7TI6zX1MarWjuJGvuY-hBnEByhJW71sEbmPwDrB' },
-        { id: 2, register_number: '2024ME045', name: 'Anjali Verma', course: 'B.Tech', department: 'Mechanical', academic_year: '2nd Year', section: 'B', semester: 'III', email: 'anjali@gmail.com', phone: '9876543211', dob: '2006-03-12', blood_group: 'O+', address: 'Chennai, India', photo_url: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCTuEzyi6BX288E_wzMVHXWMUOfXKPnfoPAH-0dsuJNUGciaHdnYoTT5IyMfM-JJZ7OW1ZV70AIG19OH-9tzOJmQq8qbSS0Xg34ph03JJs5GmH2skFMmBT1Xw7a2IL6TSpY0ftt8RCdDU_LuiAX1WBu9ZPaWZzIH6GwRQIVRSprKZ-2ZlDKud2OZ_VEYon1QNT90Cs_CwlzK6xDNIjcFck0Y3tFfIkkamZS7duB52mqHKmOgPa_uVfZVj72aDAEqz9luXXxnSkVE_YB' },
-        { id: 3, register_number: '2024CS102', name: 'Priya Patel', course: 'B.Tech', department: 'CSE', academic_year: '1st Year', section: 'A', semester: 'I', email: 'priya@gmail.com', phone: '9876543212', dob: '2007-09-05', blood_group: 'A+', address: 'Bangalore, India', photo_url: null }
-      ]);
+      console.error('Failed to fetch students:', err);
+      toast.error('Failed to load students.');
+      setStudents([]);
     } finally {
       setLoading(false);
     }
@@ -125,10 +121,9 @@ export default function StudentManagement() {
       // Get student's remarks
       const res = await api.get('/admin/remarks', { params: { student: s.register_number } });
       setStudentRemarks(res.data);
-    } catch (_) {
-      setStudentRemarks([
-        { id: 101, remark_text: 'Late-comer', created_at: '2026-07-18T09:00:00.000Z', recorder_name: 'Mr. A. Senthil' }
-      ]);
+    } catch (err) {
+      console.error('Failed to fetch remarks:', err);
+      setStudentRemarks([]);
     }
     setIsProfileOpen(true);
   };
