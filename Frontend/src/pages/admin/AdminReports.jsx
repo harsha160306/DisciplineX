@@ -41,41 +41,6 @@ export default function AdminReports() {
         title = 'Departments Configuration Report';
         headers = ['Department Name', 'Department HOD', 'Total Students', 'Total Incharges'];
         rows = res.data.map(d => [d.name, d.hod, d.totalStudents, d.totalIncharges]);
-      } 
-      
-      else if (reportType === 'student') {
-        const res = await api.get('/admin/students', { params: { search: studentSearch, department: selectedDept } });
-        title = 'Registered Students Directory';
-        headers = ['Register Number', 'Student Name', 'Department', 'Academic Year', 'Semester', 'Section', 'Email', 'Phone'];
-        rows = res.data.map(s => [s.register_number, s.name, s.department, s.academic_year, s.semester || '-', s.section || '-', s.email || '-', s.phone || '-']);
-      } 
-      
-      else if (reportType === 'remarks') {
-        const res = await api.get('/admin/remarks', { params: { department: selectedDept, month: selectedMonth } });
-        title = `Discipline Remarks Report - ${selectedMonth || 'All Months'}`;
-        headers = ['Date', 'Register Number', 'Student Name', 'Department', 'Remark Category', 'Recorded By'];
-        rows = res.data.map(r => [
-          new Date(r.created_at).toLocaleDateString('en-IN'),
-          r.register_number,
-          r.student_name,
-          r.department,
-          r.remark_text,
-          `${r.recorder_name} (${r.recorder_role})`
-        ]);
-      } 
-      
-      else if (reportType === 'hod') {
-        const res = await api.get('/admin/hods');
-        title = 'HOD Directory Report';
-        headers = ['HOD Name', 'Employee ID', 'Department', 'Email', 'Phone Number', 'Status'];
-        rows = res.data.map(h => [h.name, h.employee_id || '-', h.department, h.email || '-', h.phone || '-', h.status]);
-      } 
-      
-      else if (reportType === 'incharge') {
-        const res = await api.get('/admin/incharges');
-        title = 'Discipline Incharges Directory Report';
-        headers = ['Incharge Name', 'Employee ID', 'Department', 'Designation', 'Email', 'Mobile Number', 'Status'];
-        rows = res.data.map(i => [i.name, i.employee_id || '-', i.department, i.designation || 'Incharge', i.email || '-', i.phone || '-', i.status]);
       }
 
       // Trigger actual export helper
@@ -109,7 +74,7 @@ export default function AdminReports() {
             Generate Reports
           </h1>
           <p className="font-body text-xs text-on-surface-variant mt-1">
-            Build custom reports for departments, students, remarks, HODs, or incharges and download as PDF, Word, or Excel.
+            Build custom reports for departments and remarks, and download as PDF, Word, or Excel.
           </p>
         </div>
 
@@ -122,10 +87,7 @@ export default function AdminReports() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
               {[
                 { type: 'department', icon: 'corporate_fare', label: 'Department Report' },
-                { type: 'student', icon: 'school', label: 'Student Report' },
                 { type: 'remarks', icon: 'rate_review', label: 'Monthly Remarks' },
-                { type: 'hod', icon: 'supervisor_account', label: 'HOD Report' },
-                { type: 'incharge', icon: 'badge', label: 'Incharge Report' },
               ].map(item => (
                 <button
                   key={item.type}
@@ -161,45 +123,6 @@ export default function AdminReports() {
                 </p>
               )}
 
-              {reportType === 'hod' && (
-                <p className="font-body text-xs text-on-surface-variant flex items-center gap-1.5 p-1">
-                  <span className="material-symbols-outlined text-[16px] text-primary">info</span>
-                  Downloads a directory profile of all Heads of Departments (Name, Branch, Employee ID, Email, Phone, Status).
-                </p>
-              )}
-
-              {reportType === 'incharge' && (
-                <p className="font-body text-xs text-on-surface-variant flex items-center gap-1.5 p-1">
-                  <span className="material-symbols-outlined text-[16px] text-primary">info</span>
-                  Downloads a comprehensive directory profile of all Discipline Incharges.
-                </p>
-              )}
-
-              {reportType === 'student' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="relative">
-                    <label className="block font-label text-[10px] uppercase font-bold text-on-surface-variant mb-1">Branch Filter</label>
-                    <select
-                      value={selectedDept}
-                      onChange={e => setSelectedDept(e.target.value)}
-                      className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/40 rounded-xl text-xs focus:outline-none"
-                    >
-                      <option value="">All Branches</option>
-                      {depts.map(d => <option key={d} value={d}>{d}</option>)}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block font-label text-[10px] uppercase font-bold text-on-surface-variant mb-1">Student Register / Name Search</label>
-                    <input
-                      type="text"
-                      placeholder="e.g. 2024CS101"
-                      value={studentSearch}
-                      onChange={e => setStudentSearch(e.target.value)}
-                      className="w-full px-3 py-2 bg-surface-container-lowest border border-outline-variant/40 rounded-xl text-xs focus:outline-none"
-                    />
-                  </div>
-                </div>
-              )}
 
               {reportType === 'remarks' && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
