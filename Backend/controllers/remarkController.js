@@ -1,13 +1,20 @@
 import pool from '../db.js';
-import nodemailer from 'nodemailer';
+import { google } from 'googleapis';
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_EMAIL,
-    pass: process.env.GMAIL_APP_PASSWORD,
-  },
-});
+const createGmailClient = () => {
+  const OAuth2 = google.auth.OAuth2;
+  const oauth2Client = new OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    "https://developers.google.com/oauthplayground"
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: process.env.GMAIL_REFRESH_TOKEN
+  });
+
+  return google.gmail({ version: 'v1', auth: oauth2Client });
+};
 
 export const getStudentRemarks = async (req, res) => {
   try {
@@ -64,11 +71,31 @@ export const recordRemark = async (req, res) => {
     // Send email notification
     if (studentEmail) {
       try {
-        await transporter.sendMail({
-          from: process.env.GMAIL_EMAIL,
-          to: studentEmail,
-          subject: 'New Disciplinary Remark Recorded - DisciplineX',
-          text: `Dear ${studentName},\n\nA new disciplinary remark has been recorded on your profile.\n\nRemark Details:\n"${remark_text}"\n\nPlease check the portal or contact your department for more details.\n\nRegards,\nModern Institute College`,
+        const gmail = createGmailClient();
+        const subject = 'New Disciplinary Remark Recorded - DisciplineX';
+        const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+        const bodyText = `Dear ${studentName},\n\nA new disciplinary remark has been recorded on your profile.\n\nRemark Details:\n"${remark_text}"\n\nPlease check the portal or contact your department for more details.\n\nRegards,\nModern Institute College`;
+        
+        const messageParts = [
+          `From: ${process.env.GMAIL_EMAIL}`,
+          `To: ${studentEmail}`,
+          'Content-Type: text/plain; charset=utf-8',
+          'MIME-Version: 1.0',
+          `Subject: ${utf8Subject}`,
+          '',
+          bodyText
+        ];
+        
+        const message = messageParts.join('\n');
+        const encodedMessage = Buffer.from(message)
+          .toString('base64')
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/, '');
+          
+        await gmail.users.messages.send({
+          userId: 'me',
+          requestBody: { raw: encodedMessage }
         });
       } catch (emailError) {
         console.error('Error sending email:', emailError);
