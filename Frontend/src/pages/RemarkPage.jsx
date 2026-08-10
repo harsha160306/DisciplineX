@@ -144,60 +144,7 @@ export default function RemarkPage() {
         throw new Error('Not found');
       }
     } catch (err) {
-      toast.error('Student not found in database.');
-      console.warn('Student not found in backend, searching fallback in mock...');
-      const prefix = userDept ? userDept.substring(0, 2).toUpperCase() : 'CS';
-      // Online fallback matchers
-      const queryUpper = queryVal.trim().toUpperCase();
-      if (queryUpper === '2024CS012' || queryUpper === 'RAHUL' || queryUpper === 'RAHUL SHARMA') {
-        setStudent({
-          id: 1,
-          register_number: `2024${prefix}012`,
-          name: 'Rahul Sharma',
-          department: userDept || 'CSE',
-          academic_year: '3rd Year',
-          section: 'A',
-          semester: '5th',
-          photo_url: null
-        });
-        setRemarksHistory([
-          { id: 1, remark_text: 'Late-comer',   created_at: new Date(Date.now()-86400000).toISOString(), incharge_name: 'Mr. A. Senthil' },
-          { id: 2, remark_text: 'Non-uniform',  created_at: new Date(Date.now()-432000000).toISOString(), incharge_name: 'Ms. B. Divya' },
-          { id: 3, remark_text: 'Indiscipline', created_at: new Date(Date.now()-864000000).toISOString(), incharge_name: 'Mr. A. Senthil' },
-        ]);
-        toast.success('Student record found (offline fallback)!');
-      } else if (queryUpper === '2024CS034' || queryUpper === 'PRIYA' || queryUpper === 'PRIYA PATEL') {
-        setStudent({
-          id: 2,
-          register_number: `2024${prefix}034`,
-          name: 'Priya Patel',
-          department: userDept || 'CSE',
-          academic_year: '2nd Year',
-          section: 'B',
-          semester: '3rd',
-          photo_url: null
-        });
-        setRemarksHistory([
-          { id: 4, remark_text: 'Non-uniform',  created_at: new Date(Date.now()-172800000).toISOString(), incharge_name: 'Ms. B. Divya' }
-        ]);
-        toast.success('Student record found (offline fallback)!');
-      } else {
-        // Dynamic generation of search result for other entries to avoid empty state
-        setStudent({
-          id: 99,
-          register_number: queryUpper.match(/^\d/) ? queryUpper : `2024${prefix}999`,
-          name: queryVal,
-          department: userDept || 'CSE',
-          academic_year: '4th Year',
-          section: 'A',
-          semester: '7th',
-          photo_url: null
-        });
-        setRemarksHistory([
-          { id: 991, remark_text: 'Late-comer', created_at: new Date(Date.now()-172800000).toISOString(), incharge_name: 'Mr. A. Senthil' }
-        ]);
-        toast.success('Student record found (mocked dynamic search)!');
-      }
+      toast.error('The following student is not enrolled.');
     } finally {
       setIsSearching(false);
     }
