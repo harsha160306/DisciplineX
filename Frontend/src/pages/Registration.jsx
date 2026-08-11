@@ -1,15 +1,19 @@
-import { useState, useRef, useEffect } from 'react';
-import api from '../utils/api';
+import React, { useState, useRef, useEffect } from 'react';
+import api from '../api';
 import { toast } from 'react-hot-toast';
 import JsBarcode from 'jsbarcode';
+import { calculateValidity } from '../utils/validityHelper';
+import { generateActiveBatches } from '../utils/academicYearHelper';
 // Tesseract is loaded dynamically on-demand to keep the initial bundle small
 
 export default function Registration() {
+  const activeBatches = generateActiveBatches();
+
   // Form fields state
   const [name, setName] = useState('');
   const [registerNumber, setRegisterNumber] = useState('');
   const [course, setCourse] = useState('BTech'); // BTech, MCA, Diploma
-  const [academicYear, setAcademicYear] = useState('2024 - 2025');
+  const [academicYear, setAcademicYear] = useState(activeBatches[0].value);
   const [validity, setValidity] = useState(''); // Calculated automatically
   const [branch, setBranch] = useState('');
   const [dob, setDob] = useState('');
@@ -26,7 +30,7 @@ export default function Registration() {
     registerNumber: 'MIC-24-8921',
     course: 'BTech',
     branch: 'CSE',
-    academicYear: '2024 - 2025',
+    academicYear: activeBatches[0].value,
     validity: '4 Years (2024 - 2028)',
     dob: '2005-04-12',
     bloodGroup: 'O+',
@@ -355,10 +359,9 @@ export default function Registration() {
                     value={academicYear}
                     onChange={(e) => setAcademicYear(e.target.value)}
                   >
-                    <option>2023 - 2024</option>
-                    <option>2024 - 2025</option>
-                    <option>2025 - 2026</option>
-                    <option>2026 - 2027</option>
+                    {activeBatches.map(batch => (
+                      <option key={batch.value} value={batch.value}>{batch.value}</option>
+                    ))}
                   </select>
                   <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant pointer-events-none">expand_more</span>
                 </div>

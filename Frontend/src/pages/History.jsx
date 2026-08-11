@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { generateActiveBatches, getCalculatedYear } from '../utils/academicYearHelper';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, HeadingLevel, AlignmentType } from 'docx';
 import { saveAs } from 'file-saver';
 import jsPDF from 'jspdf';
@@ -189,8 +190,8 @@ export default function History() {
       : ['#', 'Student Name', 'Register No', 'Department', 'Year', 'Semester', 'Remark', 'Date'];
       
     const rows = filteredList.map((r, i) => isHOD
-      ? [i+1, r.name, r.registerNumber||r.register_number, r.department, r.academic_year||'-', r.semester||'-', r.remark||r.remark_text, new Date(r.created_at).toLocaleDateString(), r.incharge_name||'—']
-      : [i+1, r.name, r.registerNumber||r.register_number, r.department, r.academic_year||'-', r.semester||'-', r.remark||r.remark_text, new Date(r.created_at).toLocaleDateString()]
+      ? [i+1, r.name, r.registerNumber||r.register_number, r.department, getCalculatedYear(r.academic_year)||'-', r.semester||'-', r.remark||r.remark_text, new Date(r.created_at).toLocaleDateString(), r.incharge_name||'—']
+      : [i+1, r.name, r.registerNumber||r.register_number, r.department, getCalculatedYear(r.academic_year)||'-', r.semester||'-', r.remark||r.remark_text, new Date(r.created_at).toLocaleDateString()]
     );
     return { columns, rows };
   };
@@ -412,10 +413,9 @@ export default function History() {
                 onChange={(e) => setApiFilters({...apiFilters, year: e.target.value})}
               >
                 <option value="">All Years</option>
-                <option value="1st Year">1st Year</option>
-                <option value="2nd Year">2nd Year</option>
-                <option value="3rd Year">3rd Year</option>
-                <option value="4th Year">4th Year</option>
+                {generateActiveBatches().map(batch => (
+                  <option key={batch.value} value={batch.value}>{batch.label}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -511,7 +511,7 @@ export default function History() {
                                 <div className="font-body font-semibold text-[14px] text-on-surface truncate">{r.name}</div>
                                 <div className="flex items-center gap-2 mt-1 flex-wrap">
                                   <span className="px-2 py-0.5 bg-surface-container rounded-md font-label font-bold text-[10px] text-on-surface-variant uppercase">{r.registerNumber || r.register_number}</span>
-                                  {r.academic_year && <span className="font-label text-[11px] text-on-surface-variant">· {r.academic_year}</span>}
+                                  {r.academic_year && <span className="font-label text-[11px] text-on-surface-variant">· {getCalculatedYear(r.academic_year)}</span>}
                                   {r.semester && <span className="font-label text-[11px] text-on-surface-variant">· {r.semester} Sem</span>}
                                 </div>
                                 {isHOD && r.incharge_name && r.incharge_name !== '—' && (

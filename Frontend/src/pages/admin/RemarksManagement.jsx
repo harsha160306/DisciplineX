@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
+import { generateActiveBatches, getCalculatedYear } from '../../utils/academicYearHelper';
 import api from '../../utils/api';
 import { exportToExcel, exportToPDF, exportToWord } from '../../utils/exporter';
 
@@ -94,7 +95,7 @@ export default function RemarksManagement() {
       r.register_number,
       r.student_name,
       r.department,
-      r.academic_year,
+      getCalculatedYear(r.academic_year),
       r.remark_text,
       `${r.recorder_name} (${r.recorder_role || 'Staff'})`,
       new Date(r.created_at).toLocaleDateString('en-IN')
@@ -190,10 +191,9 @@ export default function RemarksManagement() {
                 className="w-full px-3 py-2 bg-surface border border-outline-variant/40 rounded-xl text-xs focus:outline-none appearance-none"
               >
                 <option value="">All</option>
-                <option value="1st Year">1st Year</option>
-                <option value="2nd Year">2nd Year</option>
-                <option value="3rd Year">3rd Year</option>
-                <option value="4th Year">4th Year</option>
+                {generateActiveBatches().map(batch => (
+                  <option key={batch.value} value={batch.value}>{batch.label}</option>
+                ))}
               </select>
             </div>
             {/* Category */}

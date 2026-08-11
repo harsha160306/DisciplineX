@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
+import { generateActiveBatches, getCalculatedYear } from '../../utils/academicYearHelper';
 
 const DEPT_OPTIONS = ['CSE', 'ECE', 'Mechanical', 'Civil', 'MBA'];
 
@@ -29,6 +30,8 @@ export default function StudentManagement() {
   const [dob, setDob] = useState('');
   const [bloodGroup, setBloodGroup] = useState('');
   const [address, setAddress] = useState('');
+
+  const activeBatches = generateActiveBatches();
 
   const fetchStudents = async () => {
     try {
@@ -209,7 +212,7 @@ export default function StudentManagement() {
                     </div>
                     <div>
                       <span className="text-on-surface-variant block text-[10px] uppercase font-bold tracking-wider mb-0.5">Academic Year</span>
-                      <span className="text-on-surface font-semibold truncate block">{s.academic_year}</span>
+                      <span className="text-on-surface font-semibold truncate block">{getCalculatedYear(s.academic_year)}</span>
                     </div>
                   </div>
                 </div>
@@ -275,14 +278,14 @@ export default function StudentManagement() {
                 <div className="text-center sm:text-left">
                   <h4 className="font-display font-extrabold text-lg text-on-surface">{activeStudent.name}</h4>
                   <p className="font-mono text-xs text-primary font-bold uppercase mt-0.5">{activeStudent.register_number}</p>
-                  <p className="font-body text-xs text-on-surface-variant mt-1.5">{activeStudent.course} · {activeStudent.department} · {activeStudent.academic_year}</p>
+                  <p className="font-body text-xs text-on-surface-variant mt-1.5">{activeStudent.course} · {activeStudent.department} · {getCalculatedYear(activeStudent.academic_year)}</p>
                 </div>
               </div>
 
               {/* General details grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
                 {[
-                  { label: 'Academic Year', val: activeStudent.academic_year },
+                  { label: 'Academic Year', val: `${getCalculatedYear(activeStudent.academic_year)} (${activeStudent.academic_year})` },
                   { label: 'Semester', val: activeStudent.semester || 'N/A' },
                   { label: 'Section', val: activeStudent.section || 'N/A' },
                   { label: 'Dob', val: activeStudent.dob || 'N/A' },
@@ -375,10 +378,10 @@ export default function StudentManagement() {
                   <label className="block font-label text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Academic Year</label>
                   <select required value={academicYear} onChange={e => setAcademicYear(e.target.value)}
                     className="w-full px-3 py-2.5 bg-surface-container border border-outline-variant/40 rounded-xl text-sm focus:outline-none appearance-none">
-                    <option value="1st Year">1st Year</option>
-                    <option value="2nd Year">2nd Year</option>
-                    <option value="3rd Year">3rd Year</option>
-                    <option value="4th Year">4th Year</option>
+                    <option value="" disabled>Select Batch</option>
+                    {activeBatches.map(batch => (
+                      <option key={batch.value} value={batch.value}>{batch.value}</option>
+                    ))}
                   </select>
                 </div>
                 <div>

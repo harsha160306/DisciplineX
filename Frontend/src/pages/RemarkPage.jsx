@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from 'recharts';
+import { generateActiveBatches, getCalculatedYear } from '../utils/academicYearHelper';
 import api from '../utils/api';
 import { toast } from 'react-hot-toast';
 import { useAppContext } from '../context/AppContext';
@@ -595,10 +597,9 @@ export default function RemarkPage() {
                           onChange={(e) => setFilterYear(e.target.value)}
                         >
                           <option value="">Select Academic Year</option>
-                          <option value="1st Year">1st Year</option>
-                          <option value="2nd Year">2nd Year</option>
-                          <option value="3rd Year">3rd Year</option>
-                          <option value="4th Year">4th Year</option>
+                          {generateActiveBatches().map(batch => (
+                            <option key={batch.value} value={batch.value}>{batch.label}</option>
+                          ))}
                         </select>
                         <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-outline-variant">expand_more</span>
                       </div>
@@ -668,7 +669,7 @@ export default function RemarkPage() {
                         <div className="overflow-hidden">
                           <div className="font-semibold text-on-surface text-sm truncate">{fs.name}</div>
                           <div className="font-mono text-xs text-on-surface-variant truncate mt-0.5">{fs.register_number}</div>
-                          <div className="text-[10px] font-label text-on-surface-variant mt-1">{fs.department} • {fs.academic_year}</div>
+                          <div className="text-[10px] font-label text-on-surface-variant mt-1">{fs.department} • {getCalculatedYear(fs.academic_year)}</div>
                         </div>
                       </div>
                     ))}
@@ -718,7 +719,7 @@ export default function RemarkPage() {
                         {[
                           { icon: 'badge', label: 'Reg. No.', value: student.register_number },
                           { icon: 'school', label: 'Department', value: student.department },
-                          { icon: 'calendar_today', label: 'Academic Year', value: student.academic_year },
+                          { icon: 'calendar_today', label: 'Academic Year', value: `${getCalculatedYear(student.academic_year)} (${student.academic_year})` },
                           { icon: 'meeting_room', label: 'Section / Sem', value: `Section ${student.section || 'A'} · Sem ${student.semester || '5th'}` },
                         ].map((item) => (
                           <div key={item.label} className="bg-surface rounded-xl p-3.5 border border-outline-variant/20">
