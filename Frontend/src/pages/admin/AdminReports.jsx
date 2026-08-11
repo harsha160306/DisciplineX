@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
-import html2canvas from 'html2canvas';
+import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
 import {
   BarChart, Bar, Cell,
@@ -162,19 +162,20 @@ export default function AdminReports() {
 
     const toastId = toast.loading('Generating PDF document...');
     try {
-      const canvas = await html2canvas(reportElement, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: '#ffffff'
+      const imgData = await toPng(reportElement, {
+        backgroundColor: '#ffffff',
+        pixelRatio: 2
       });
 
-      const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = pdf.internal.pageSize.getHeight();
-      const imgWidth = canvas.width;
-      const imgHeight = canvas.height;
+      
+      const rect = reportElement.getBoundingClientRect();
+      const imgWidth = rect.width;
+      const imgHeight = rect.height;
+      
       const ratio = pdfWidth / imgWidth;
       const totalPdfHeight = imgHeight * ratio;
 
