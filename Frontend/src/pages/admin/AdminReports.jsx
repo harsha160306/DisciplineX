@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
+import { exportToExcel } from '../../utils/exporter';
 import {
   BarChart, Bar, Cell,
   PieChart, Pie, Legend,
@@ -158,6 +159,13 @@ export default function AdminReports() {
     window.print();
   };
 
+  const handleExportExcel = () => {
+    if (!reportData) return;
+    const fileName = `${reportData.reportType}_report`;
+    exportToExcel(reportData.headers, reportData.rows, fileName);
+    toast.success('Excel report downloaded!');
+  };
+
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
@@ -192,9 +200,14 @@ export default function AdminReports() {
               <button type="button" onClick={() => setShowReport(false)} className="flex items-center gap-2 text-sm font-label font-semibold text-on-surface-variant hover:text-primary transition-colors">
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span> Back to Filters
               </button>
-              <button type="button" onClick={handlePrint} className="px-5 py-2.5 brand-gradient text-white font-label font-bold text-sm rounded-xl shadow-brand-sm hover:shadow-brand transition-all flex items-center gap-2 active:scale-95">
-                <span className="material-symbols-outlined text-[18px]">print</span> Download PDF
-              </button>
+              <div className="flex items-center gap-3">
+                <button type="button" onClick={handleExportExcel} className="px-5 py-2.5 bg-white border border-outline-variant/40 text-gray-700 font-label font-bold text-sm rounded-xl shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2 active:scale-95">
+                  <span className="material-symbols-outlined text-[18px] text-emerald-600">grid_on</span> Export Excel
+                </button>
+                <button type="button" onClick={handlePrint} className="px-5 py-2.5 brand-gradient text-white font-label font-bold text-sm rounded-xl shadow-brand-sm hover:shadow-brand transition-all flex items-center gap-2 active:scale-95">
+                  <span className="material-symbols-outlined text-[18px]">print</span> Download PDF
+                </button>
+              </div>
             </div>
 
             {/* Report Content */}
