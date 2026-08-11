@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
-import { exportToExcel } from '../../utils/exporter';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
 import {
   BarChart, Bar, Cell,
   PieChart, Pie, Legend,
@@ -155,15 +156,48 @@ export default function AdminReports() {
     }
   };
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handleDownloadPDF = async () => {
+    const reportElement = document.getElementById('report-content-to-download');
+    if (!reportElement) return;
 
-  const handleExportExcel = () => {
-    if (!reportData) return;
-    const fileName = `${reportData.reportType}_report`;
-    exportToExcel(reportData.headers, reportData.rows, fileName);
-    toast.success('Excel report downloaded!');
+    const toastId = toast.loading('Generating PDF document...');
+    try {
+      const canvas = await html2canvas(reportElement, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const ratio = pdfWidth / imgWidth;
+      const totalPdfHeight = imgHeight * ratio;
+
+      let heightLeft = totalPdfHeight;
+      let position = 0;
+
+      // Add a slight margin at the top
+      pdf.addImage(imgData, 'PNG', 0, position + 5, pdfWidth, totalPdfHeight);
+      heightLeft -= pdfHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - totalPdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position + 5, pdfWidth, totalPdfHeight);
+        heightLeft -= pdfHeight;
+      }
+
+      pdf.save(`${reportData.reportType}_report.pdf`);
+      toast.success('PDF downloaded successfully!', { id: toastId });
+    } catch (err) {
+      console.error(err);
+      toast.error('Failed to generate PDF', { id: toastId });
+    }
   };
 
   const CustomTooltip = ({ active, payload, label }) => {
@@ -201,17 +235,14 @@ export default function AdminReports() {
                 <span className="material-symbols-outlined text-[18px]">arrow_back</span> Back to Filters
               </button>
               <div className="flex items-center gap-3">
-                <button type="button" onClick={handleExportExcel} className="px-5 py-2.5 bg-white border border-outline-variant/40 text-gray-700 font-label font-bold text-sm rounded-xl shadow-sm hover:bg-gray-50 transition-all flex items-center gap-2 active:scale-95">
-                  <span className="material-symbols-outlined text-[18px] text-emerald-600">grid_on</span> Export Excel
-                </button>
-                <button type="button" onClick={handlePrint} className="px-5 py-2.5 brand-gradient text-white font-label font-bold text-sm rounded-xl shadow-brand-sm hover:shadow-brand transition-all flex items-center gap-2 active:scale-95">
-                  <span className="material-symbols-outlined text-[18px]">print</span> Download PDF
+                <button type="button" onClick={handleDownloadPDF} className="px-5 py-2.5 brand-gradient text-white font-label font-bold text-sm rounded-xl shadow-brand-sm hover:shadow-brand transition-all flex items-center gap-2 active:scale-95">
+                  <span className="material-symbols-outlined text-[18px]">download</span> Download PDF
                 </button>
               </div>
             </div>
 
             {/* Report Content */}
-            <div className="report-content">
+            <div id="report-content-to-download" className="report-content bg-white p-4">
               <div className="text-center mb-10">
                 <h2 className="text-2xl md:text-3xl font-display font-extrabold text-primary mb-2">Modern Institute College</h2>
                 <h3 className="text-lg md:text-xl font-display font-bold text-gray-700">{reportData.title}</h3>
