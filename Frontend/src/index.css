@@ -245,3 +245,36 @@ input:focus, select:focus, textarea:focus {
 .ghost-border {
   border: 1px solid color-mix(in srgb, var(--color-outline-variant) 50%, transparent);
 }
+
+/* ─── Print Styles ────────────────────────────────────────────────── */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .printable-report, .printable-report * {
+    visibility: visible;
+  }
+  .printable-report {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-shadow: none !important;
+    border: none !important;
+    background: white !important;
+  }
+  .no-print, .no-print * {
+    display: none !important;
+    visibility: hidden !important;
+  }
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+  .break-inside-avoid {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
