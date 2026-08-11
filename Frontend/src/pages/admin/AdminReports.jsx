@@ -163,22 +163,22 @@ export default function AdminReports() {
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
       const pageWidth = pdf.internal.pageSize.getWidth();
       
-      // 1. Native PDF Header
+      // 1. Native PDF Header - Optimized spacing
       pdf.setFont('helvetica', 'bold');
-      pdf.setFontSize(22);
+      pdf.setFontSize(20);
       pdf.setTextColor(59, 130, 246);
-      pdf.text('Modern Institute College', pageWidth / 2, 22, { align: 'center' });
+      pdf.text('Modern Institute College', pageWidth / 2, 16, { align: 'center' });
       
-      pdf.setFontSize(14);
+      pdf.setFontSize(12);
       pdf.setTextColor(55, 65, 81);
-      pdf.text(reportData.title, pageWidth / 2, 32, { align: 'center' });
+      pdf.text(reportData.title, pageWidth / 2, 24, { align: 'center' });
       
-      pdf.setFontSize(10);
+      pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
       pdf.setTextColor(107, 114, 128);
-      pdf.text(`Generated on: ${new Date().toLocaleString('en-IN')}`, pageWidth / 2, 40, { align: 'center' });
+      pdf.text(`Generated on: ${new Date().toLocaleString('en-IN')}`, pageWidth / 2, 30, { align: 'center' });
 
-      let currentY = 48;
+      let currentY = 36;
 
       // 2. Snapshot Charts Only
       const chartsElement = document.querySelector('.chart-grid');
@@ -191,8 +191,8 @@ export default function AdminReports() {
         let imgWidth = availableWidth;
         let imgHeight = (imgProps.height * availableWidth) / imgProps.width;
         
-        // Constrain height to ensure table can start on the same page
-        const maxHeight = 85;
+        // Constrain height tightly to ensure table fits on the same page
+        const maxHeight = 70;
         let xOffset = margin;
         
         if (imgHeight > maxHeight) {
@@ -202,20 +202,20 @@ export default function AdminReports() {
         }
         
         pdf.addImage(imgData, 'PNG', xOffset, currentY, imgWidth, imgHeight);
-        currentY += imgHeight + 12;
+        currentY += imgHeight + 8; // tighter gap
       }
 
-      // 3. Native Data Table immediately below charts
+      // 3. Native Data Table with tighter padding
       autoTable(pdf, {
         startY: currentY,
         head: [reportData.headers],
         body: reportData.rows.map(row => row.map(cell => cell === 0 ? '-' : cell)),
         theme: 'grid',
-        headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold', fontSize: 10, halign: 'center' },
-        bodyStyles: { fontSize: 9, textColor: 60, halign: 'center' },
+        headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold', fontSize: 9, halign: 'center' },
+        bodyStyles: { fontSize: 8, textColor: 60, halign: 'center' },
         alternateRowStyles: { fillColor: [248, 250, 252] },
-        margin: { left: 15, right: 15, bottom: 15 },
-        styles: { cellPadding: 4, overflow: 'linebreak' }
+        margin: { left: 15, right: 15, bottom: 10 },
+        styles: { cellPadding: 3, overflow: 'linebreak' }
       });
 
       pdf.save(`${reportData.reportType}_report.pdf`);
