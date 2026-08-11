@@ -37,10 +37,82 @@ export default function AdminReports() {
       let fileName = `${reportType}_report`;
 
       if (reportType === 'department') {
-        const res = await api.get('/admin/departments');
-        title = 'Departments Configuration Report';
-        headers = ['Department Name', 'Department HOD', 'Total Students', 'Total Incharges'];
-        rows = res.data.map(d => [d.name, d.hod, d.totalStudents, d.totalIncharges]);
+        // Fetch departments and all remarks to build a comprehensive analysis
+        const [deptRes, remarkRes] = await Promise.all([
+          api.get('/admin/departments'),
+          api.get('/admin/remarks')
+        ]);
+        
+        const deptsData = deptRes.data;
+        const remarksData = remarkRes.data;
+        
+        // Aggregate remarks by department and category
+        const deptStats = {};
+        deptsData.forEach(d => {
+           deptStats[d.name] = { total: 0, 'Late-comer': 0, 'Non-uniform': 0, 'Indiscipline': 0, 'Others': 0 };
+        });
+        
+        remarksData.forEach(r => {
+           const dept = r.department;
+           if (deptStats[dept]) {
+             deptStats[dept].total++;
+             const cat = r.remark_text;
+             if (deptStats[dept][cat] !== undefined) {
+               deptStats[dept][cat]++;
+             } else {
+               deptStats[dept]['Others']++;
+             }
+           }
+        });
+
+        title = 'Departments Configuration & Remarks Analysis Report';
+        headers = [
+          'Department Name', 'HOD', 'Total Students', 'Total Incharges', 
+          'Total Remarks', 'Late-comer', 'Non-uniform', 'Indiscipline', 'Others'
+        ];
+        
+        rows = deptsData.map(d => [
+          d.name, 
+          d.hod, 
+          d.totalStudents, 
+          d.totalIncharges,
+          deptStats[d.name].total,
+          deptStats[d.name]['Late-comer'],
+          deptStats[d.name]['Non-uniform'],
+          deptStats[d.name]['Indiscipline'],
+          deptStats[d.name]['Others']
+        ]);
+
+      } else if (reportType === 'remarks') {
+        // Build query params for monthly remarks
+        const params = { month: selectedMonth };
+        if (selectedDept) params.department = selectedDept;
+        
+        const res = await api.get('/admin/remarks', { params });
+        const remarksData = res.data;
+        
+        const [yyyy, mm] = selectedMonth.split('-');
+        const monthName = new Date(yyyy, mm - 1).toLocaleString('default', { month: 'long' });
+        const branchDisplay = selectedDept ? selectedDept : 'All Branches';
+        
+        title = `Monthly Remarks Report - ${monthName} ${yyyy} (${branchDisplay})`;
+        headers = ['Date', 'Student Name', 'Register No', 'Department', 'Year', 'Remark Category', 'Recorded By'];
+        
+        rows = remarksData.map(r => [
+          new Date(r.created_at).toLocaleDateString('en-IN'),
+          r.student_name,
+          r.register_number,
+          r.department,
+          r.academic_year,
+          r.remark_text,
+          r.recorder_name
+        ]);
+        
+        if (rows.length === 0) {
+          toast.error('No remarks found for the selected month and branch.');
+          setGenerating(false);
+          return;
+        }
       }
 
       // Trigger actual export helper
