@@ -25,6 +25,7 @@ export default function HODManagement() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
 
   const fetchHODs = async () => {
     try {
@@ -63,6 +64,7 @@ export default function HODManagement() {
     setEmail('');
     setPhone('');
     setNewPassword('');
+    setOldPassword('');
     setActiveHOD(null);
   };
 
@@ -425,6 +427,10 @@ export default function HODManagement() {
                 You are updating the credentials for <span className="font-semibold text-on-surface">{activeHOD?.name}</span>.
               </p>
               <div>
+                <label className="block font-label text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Old Password</label>
+                <input type="password" required value={oldPassword} onChange={e => setOldPassword(e.target.value)} placeholder="Enter old password"
+                  className="w-full px-3 py-2.5 bg-surface-container border border-outline-variant/40 rounded-xl text-sm focus:outline-none mb-3" />
+                
                 <label className="block font-label text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">New Password</label>
                 <input type="password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Minimum 6 characters"
                   className="w-full px-3 py-2.5 bg-surface-container border border-outline-variant/40 rounded-xl text-sm focus:outline-none" />

@@ -26,6 +26,7 @@ export default function InchargeManagement() {
   const [phone, setPhone] = useState('');
   const [designation, setDesignation] = useState('');
   const [newPassword, setNewPassword] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
 
   const fetchIncharges = async () => {
     try {
@@ -65,6 +66,7 @@ export default function InchargeManagement() {
     setPhone('');
     setDesignation('');
     setNewPassword('');
+    setOldPassword('');
     setActiveIncharge(null);
   };
 
@@ -432,6 +434,10 @@ export default function InchargeManagement() {
                 You are updating the credentials for <span className="font-semibold text-on-surface">{activeIncharge?.name}</span>.
               </p>
               <div>
+                <label className="block font-label text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">Old Password</label>
+                <input type="password" required value={oldPassword} onChange={e => setOldPassword(e.target.value)} placeholder="Enter old password"
+                  className="w-full px-3 py-2.5 bg-surface-container border border-outline-variant/40 rounded-xl text-sm focus:outline-none mb-3" />
+                
                 <label className="block font-label text-[11px] font-semibold text-on-surface-variant uppercase tracking-wider mb-1">New Password</label>
                 <input type="password" required value={newPassword} onChange={e => setNewPassword(e.target.value)} placeholder="Minimum 6 characters"
                   className="w-full px-3 py-2.5 bg-surface-container border border-outline-variant/40 rounded-xl text-sm focus:outline-none" />
