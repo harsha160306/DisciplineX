@@ -3,6 +3,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 import {
   BarChart, Bar, Cell,
   PieChart, Pie, Legend,
@@ -157,44 +158,58 @@ export default function AdminReports() {
   };
 
   const handleDownloadPDF = async () => {
-    const reportElement = document.getElementById('report-content-to-download');
-    if (!reportElement) return;
-
-    const toastId = toast.loading('Generating PDF document...');
+    const toastId = toast.loading('Generating professional PDF document...');
     try {
-      const imgData = await toPng(reportElement, {
-        backgroundColor: '#ffffff',
-        pixelRatio: 2
-      });
-
       const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+      const pageWidth = pdf.internal.pageSize.getWidth();
       
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = pdf.internal.pageSize.getHeight();
+      // 1. Native PDF Header
+      pdf.setFont('helvetica', 'bold');
+      pdf.setFontSize(22);
+      pdf.setTextColor(59, 130, 246);
+      pdf.text('Modern Institute College', pageWidth / 2, 22, { align: 'center' });
       
-      const rect = reportElement.getBoundingClientRect();
-      const imgWidth = rect.width;
-      const imgHeight = rect.height;
+      pdf.setFontSize(14);
+      pdf.setTextColor(55, 65, 81);
+      pdf.text(reportData.title, pageWidth / 2, 32, { align: 'center' });
       
-      const ratio = pdfWidth / imgWidth;
-      const totalPdfHeight = imgHeight * ratio;
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(107, 114, 128);
+      pdf.text(`Generated on: ${new Date().toLocaleString('en-IN')}`, pageWidth / 2, 40, { align: 'center' });
 
-      let heightLeft = totalPdfHeight;
-      let position = 0;
+      let currentY = 48;
 
-      // Add a slight margin at the top
-      pdf.addImage(imgData, 'PNG', 0, position + 5, pdfWidth, totalPdfHeight);
-      heightLeft -= pdfHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - totalPdfHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position + 5, pdfWidth, totalPdfHeight);
-        heightLeft -= pdfHeight;
+      // 2. Snapshot Charts Only
+      const chartsElement = document.querySelector('.chart-grid');
+      if (chartsElement) {
+        const imgData = await toPng(chartsElement, { backgroundColor: '#ffffff', pixelRatio: 2 });
+        const imgProps = pdf.getImageProperties(imgData);
+        
+        // Fit charts nicely within page margins
+        const margin = 15;
+        const availableWidth = pageWidth - (margin * 2);
+        const imgHeight = (imgProps.height * availableWidth) / imgProps.width;
+        
+        pdf.addImage(imgData, 'PNG', margin, currentY, availableWidth, imgHeight);
+        currentY += imgHeight + 15;
       }
 
+      // 3. Native Data Table with auto-pagination
+      pdf.autoTable({
+        startY: currentY,
+        head: [reportData.headers],
+        body: reportData.rows.map(row => row.map(cell => cell === 0 ? '-' : cell)),
+        theme: 'grid',
+        headStyles: { fillColor: [59, 130, 246], textColor: 255, fontStyle: 'bold', fontSize: 10, halign: 'center' },
+        bodyStyles: { fontSize: 9, textColor: 60, halign: 'center' },
+        alternateRowStyles: { fillColor: [248, 250, 252] },
+        margin: { left: 15, right: 15, bottom: 15 },
+        styles: { cellPadding: 4, overflow: 'linebreak' }
+      });
+
       pdf.save(`${reportData.reportType}_report.pdf`);
-      toast.success('PDF downloaded successfully!', { id: toastId });
+      toast.success('Professional PDF downloaded successfully!', { id: toastId });
     } catch (err) {
       console.error(err);
       toast.error('Failed to generate PDF', { id: toastId });
