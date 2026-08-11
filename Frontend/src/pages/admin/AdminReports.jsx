@@ -3,7 +3,7 @@ import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
 import { toPng } from 'html-to-image';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import {
   BarChart, Bar, Cell,
   PieChart, Pie, Legend,
@@ -196,7 +196,7 @@ export default function AdminReports() {
       }
 
       // 3. Native Data Table with auto-pagination
-      pdf.autoTable({
+      autoTable(pdf, {
         startY: currentY,
         head: [reportData.headers],
         body: reportData.rows.map(row => row.map(cell => cell === 0 ? '-' : cell)),
