@@ -1,8 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
-import api from '../api';
+import { useState, useRef, useEffect } from 'react';
+import api from '../utils/api';
 import { toast } from 'react-hot-toast';
 import JsBarcode from 'jsbarcode';
-import { calculateValidity } from '../utils/validityHelper';
 import { generateActiveBatches } from '../utils/academicYearHelper';
 // Tesseract is loaded dynamically on-demand to keep the initial bundle small
 
