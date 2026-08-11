@@ -192,12 +192,18 @@ export default function AdminReports() {
         const imgHeight = (imgProps.height * availableWidth) / imgProps.width;
         
         pdf.addImage(imgData, 'PNG', margin, currentY, availableWidth, imgHeight);
-        currentY += imgHeight + 15;
       }
 
-      // 3. Native Data Table with auto-pagination
+      // 3. Move Table to Page 2 for clean professional layout
+      pdf.addPage();
+      
+      pdf.setFontSize(14);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(55, 65, 81);
+      pdf.text('Detailed Data Records', pageWidth / 2, 22, { align: 'center' });
+
       autoTable(pdf, {
-        startY: currentY,
+        startY: 30,
         head: [reportData.headers],
         body: reportData.rows.map(row => row.map(cell => cell === 0 ? '-' : cell)),
         theme: 'grid',
