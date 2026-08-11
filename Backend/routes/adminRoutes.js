@@ -59,7 +59,7 @@ router.get('/logs', auth, adminOnly, getActivityLogs);
 router.post('/logs', auth, adminOnly, createActivityLog);
 
 // System Settings
-router.get('/settings', auth, adminOnly, getSystemSettings);
+router.get('/settings', auth, getSystemSettings); // Open to all authenticated users
 router.post('/settings', auth, adminOnly, updateSystemSettings);
 
 // Analytics

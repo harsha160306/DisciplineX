@@ -13,7 +13,7 @@ const REMARK_BADGE = {
   'Indiscipline': { bg: 'bg-violet-100 dark:bg-violet-900/30',text: 'text-violet-700 dark:text-violet-400' },
   'Others':       { bg: 'bg-slate-100 dark:bg-slate-800/40',  text: 'text-slate-700 dark:text-slate-400' },
 };
-const badgeFor = (remark) => REMARK_BADGE[remark] || REMARK_BADGE['Others'];
+const badgeFor = (remark) => REMARK_BADGE[remark] || { bg: 'bg-teal-100 dark:bg-teal-900/30', text: 'text-teal-700 dark:text-teal-400' };
 
 /* ─── Rich example / fallback data ────────────────────────────── */
 function buildFallback(dept) {
@@ -250,12 +250,38 @@ export default function RemarkPage() {
     setCustomRemark('');
   };
 
-  const REMARK_OPTIONS = [
+  const [remarkOptions, setRemarkOptions] = useState([
     { value: 'Non-uniform',  icon: 'checkroom',       color: 'text-amber-600 dark:text-amber-400',  bg: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-800/30' },
     { value: 'Late-comer',   icon: 'schedule',        color: 'text-rose-600 dark:text-rose-400',    bg: 'bg-rose-50 dark:bg-rose-950/30 border-rose-200/60 dark:border-rose-800/30' },
     { value: 'Indiscipline', icon: 'gavel',           color: 'text-violet-600 dark:text-violet-400',bg: 'bg-violet-50 dark:bg-violet-950/30 border-violet-200/60 dark:border-violet-800/30' },
     { value: 'Others',       icon: 'edit_note',       color: 'text-slate-600 dark:text-slate-400',  bg: 'bg-slate-50 dark:bg-slate-950/30 border-slate-200/60 dark:border-slate-800/30' },
-  ];
+  ]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get('/admin/settings');
+        if (res.data && res.data.remark_categories) {
+          const cats = res.data.remark_categories.split(',').map(c => c.trim()).filter(Boolean);
+          if (!cats.includes('Others')) cats.push('Others'); // ensure 'Others' is always available
+          
+          const dynamicOptions = cats.map(cat => {
+            if (cat === 'Non-uniform') return { value: cat, icon: 'checkroom', color: 'text-amber-600 dark:text-amber-400', bg: 'bg-amber-50 dark:bg-amber-950/30 border-amber-200/60 dark:border-amber-800/30' };
+            if (cat === 'Late-comer') return { value: cat, icon: 'schedule', color: 'text-rose-600 dark:text-rose-400', bg: 'bg-rose-50 dark:bg-rose-950/30 border-rose-200/60 dark:border-rose-800/30' };
+            if (cat === 'Indiscipline') return { value: cat, icon: 'gavel', color: 'text-violet-600 dark:text-violet-400', bg: 'bg-violet-50 dark:bg-violet-950/30 border-violet-200/60 dark:border-violet-800/30' };
+            if (cat === 'Others') return { value: cat, icon: 'edit_note', color: 'text-slate-600 dark:text-slate-400', bg: 'bg-slate-50 dark:bg-slate-950/30 border-slate-200/60 dark:border-slate-800/30' };
+            
+            // Custom dynamically added category fallback styling
+            return { value: cat, icon: 'warning', color: 'text-teal-600 dark:text-teal-400', bg: 'bg-teal-50 dark:bg-teal-950/30 border-teal-200/60 dark:border-teal-800/30' };
+          });
+          
+          setRemarkOptions(dynamicOptions);
+        }
+      } catch (e) {
+        console.warn('Failed to fetch dynamic remark categories, using defaults.', e);
+      }
+    })();
+  }, []);
 
   /* ── Spinner for loading HOD data ── */
   if (dataLoading) {
@@ -719,7 +745,7 @@ export default function RemarkPage() {
                       </div>
                       <div className="p-6 space-y-5">
                         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                          {REMARK_OPTIONS.map((opt) => (
+                          {remarkOptions.map((opt) => (
                             <button
                               key={opt.value}
                               type="button"

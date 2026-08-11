@@ -17,6 +17,22 @@ export default function RemarkScanner() {
   // Remarks state
   const [selectedRemark, setSelectedRemark] = useState('');
   const [customRemark, setCustomRemark] = useState('');
+  const [remarkCategories, setRemarkCategories] = useState(['Non-uniform', 'Late-comer', 'Indiscipline', 'Others']);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await api.get('/admin/settings');
+        if (res.data && res.data.remark_categories) {
+          const cats = res.data.remark_categories.split(',').map(c => c.trim()).filter(Boolean);
+          if (!cats.includes('Others')) cats.push('Others');
+          setRemarkCategories(cats);
+        }
+      } catch (e) {
+        console.warn('Failed to fetch dynamic remark categories in scanner.', e);
+      }
+    })();
+  }, []);
 
   const scannerRef = useRef(null);
   const isFetchingRef = useRef(false);
@@ -395,7 +411,7 @@ export default function RemarkScanner() {
                     </div>
                     
                     <div className="grid grid-cols-2 gap-3">
-                      {['Non-uniform', 'Late-comer', 'Indiscipline', 'Others'].map((remarkType) => (
+                      {remarkCategories.map((remarkType) => (
                         <button
                           key={remarkType}
                           onClick={() => setSelectedRemark(remarkType)}
