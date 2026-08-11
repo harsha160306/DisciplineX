@@ -186,24 +186,28 @@ export default function AdminReports() {
         const imgData = await toPng(chartsElement, { backgroundColor: '#ffffff', pixelRatio: 2 });
         const imgProps = pdf.getImageProperties(imgData);
         
-        // Fit charts nicely within page margins
         const margin = 15;
         const availableWidth = pageWidth - (margin * 2);
-        const imgHeight = (imgProps.height * availableWidth) / imgProps.width;
+        let imgWidth = availableWidth;
+        let imgHeight = (imgProps.height * availableWidth) / imgProps.width;
         
-        pdf.addImage(imgData, 'PNG', margin, currentY, availableWidth, imgHeight);
+        // Constrain height to ensure table can start on the same page
+        const maxHeight = 85;
+        let xOffset = margin;
+        
+        if (imgHeight > maxHeight) {
+          imgHeight = maxHeight;
+          imgWidth = (imgProps.width * maxHeight) / imgProps.height;
+          xOffset = margin + (availableWidth - imgWidth) / 2; // Center horizontally
+        }
+        
+        pdf.addImage(imgData, 'PNG', xOffset, currentY, imgWidth, imgHeight);
+        currentY += imgHeight + 12;
       }
 
-      // 3. Move Table to Page 2 for clean professional layout
-      pdf.addPage();
-      
-      pdf.setFontSize(14);
-      pdf.setFont('helvetica', 'bold');
-      pdf.setTextColor(55, 65, 81);
-      pdf.text('Detailed Data Records', pageWidth / 2, 22, { align: 'center' });
-
+      // 3. Native Data Table immediately below charts
       autoTable(pdf, {
-        startY: 30,
+        startY: currentY,
         head: [reportData.headers],
         body: reportData.rows.map(row => row.map(cell => cell === 0 ? '-' : cell)),
         theme: 'grid',
