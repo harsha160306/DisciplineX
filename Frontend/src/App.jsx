@@ -1,5 +1,6 @@
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { Toaster } from 'react-hot-toast';
+import { Toaster, toast } from 'react-hot-toast';
 import Login from './pages/Login';
 import Home from './pages/Home';
 import Registration from './pages/Registration';
@@ -23,6 +24,24 @@ import SystemSettings from './pages/admin/SystemSettings';
 import AdminProfile from './pages/admin/AdminProfile';
 
 function App() {
+  useEffect(() => {
+    const handleOnline = () => toast.success('You are back online!', { id: 'network' });
+    const handleOffline = () => toast.error('You are offline. Some features may be unavailable.', { id: 'network', duration: Infinity });
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    // Initial check
+    if (!navigator.onLine) {
+      handleOffline();
+    }
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   return (
     <Router>
       <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
