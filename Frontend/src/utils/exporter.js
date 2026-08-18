@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import { Document, Paragraph, Packer, TextRun, Table, TableRow, TableCell, BorderStyle } from 'docx';
 
 /**
@@ -63,7 +63,7 @@ export const exportToPDF = (title, headers, rows, fileName = 'report') => {
     doc.line(14, 29, 196, 29);
 
     // AutoTable plugin call
-    doc.autoTable({
+      autoTable(doc, {
       startY: 33,
       head: [headers],
       body: rows,
