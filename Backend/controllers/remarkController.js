@@ -1,6 +1,22 @@
 import Remark from '../models/Remark.js';
 import Student from '../models/Student.js';
 import User from '../models/User.js';
+import { google } from 'googleapis';
+
+const createGmailClient = () => {
+  const OAuth2 = google.auth.OAuth2;
+  const oauth2Client = new OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    "https://developers.google.com/oauthplayground"
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: process.env.GMAIL_REFRESH_TOKEN
+  });
+
+  return google.gmail({ version: 'v1', auth: oauth2Client });
+};
 
 export const getStudentRemarks = async (req, res) => {
   try {
@@ -47,31 +63,38 @@ export const recordRemark = async (req, res) => {
       recorded_by
     });
 
-    // Send SMS notification
-    if (student.phone) {
+    // Send email notification
+    if (student.email) {
       try {
-        const smsGatewayUrl = process.env.SMS_GATEWAY_URL;
+        const gmail = createGmailClient();
+        const subject = 'New Disciplinary Remark Recorded - DisciplineX';
+        const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
+        const bodyText = `Dear ${student.name},\n\nA new disciplinary remark has been recorded on your profile.\n\nRemark Details:\n"${remark_text}"\n\nPlease check the portal or contact your department for more details.\n\nRegards,\nModern Institute College`;
         
-        if (smsGatewayUrl) {
-          const messageText = `DisciplineX Alert:\nDear ${student.name}, a new disciplinary remark ("${remark_text}") has been recorded. Please contact your department for details.\n\nప్రియమైన ${student.name}, మీ పై కొత్త క్రమశిక్షణా రిమార్క్ ("${remark_text}") నమోదు చేయబడింది. మరిన్ని వివరాల కోసం దయచేసి మీ విభాగాన్ని సంప్రదించండి.`;
+        const messageParts = [
+          `From: ${process.env.GMAIL_EMAIL}`,
+          `To: ${student.email}`,
+          'Content-Type: text/plain; charset=utf-8',
+          'MIME-Version: 1.0',
+          `Subject: ${utf8Subject}`,
+          '',
+          bodyText
+        ];
+        
+        const message = messageParts.join('\n');
+        const encodedMessage = Buffer.from(message)
+          .toString('base64')
+          .replace(/\+/g, '-')
+          .replace(/\//g, '_')
+          .replace(/=+$/, '');
           
-          await fetch(smsGatewayUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': process.env.SMS_GATEWAY_KEY || ''
-            },
-            body: JSON.stringify({
-              phone: student.phone,
-              message: messageText
-            })
-          });
-        } else {
-          console.log('SMS_GATEWAY_URL not configured, skipping SMS notification.');
-        }
-      } catch (smsError) {
-        console.error('Error sending SMS:', smsError);
-        // We still return success for remark creation even if SMS fails
+        await gmail.users.messages.send({
+          userId: 'me',
+          requestBody: { raw: encodedMessage }
+        });
+      } catch (emailError) {
+        console.error('Error sending email:', emailError);
+        // We still return success for remark creation even if email fails
       }
     }
 
