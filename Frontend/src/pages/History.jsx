@@ -548,7 +548,7 @@ export default function History() {
                           <span className="material-symbols-outlined text-[16px] text-primary">calendar_today</span>
                           {getDateCollectionTitle(dateStr)}
                         </div>
-                        {dateStr === new Date().toISOString().slice(0, 10) && (
+                        {getDateCollectionTitle(dateStr).includes('Today') && (
                           <button onClick={() => handleDownloadDayPDF(dateStr, groupedRemarks[dateStr])} className="flex items-center gap-1.5 px-3 py-1 bg-red-50 text-red-600 rounded-lg border border-red-200 hover:bg-red-100 transition-colors cursor-pointer active:scale-95">
                             <span className="material-symbols-outlined text-[14px]">picture_as_pdf</span>
                             DOWNLOAD PDF
