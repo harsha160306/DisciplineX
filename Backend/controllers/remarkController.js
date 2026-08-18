@@ -53,7 +53,7 @@ export const recordRemark = async (req, res) => {
         const smsGatewayUrl = process.env.SMS_GATEWAY_URL;
         
         if (smsGatewayUrl) {
-          const messageText = `DisciplineX Alert: Dear ${student.name}, a new disciplinary remark ("${remark_text}") has been recorded. Please contact your department for details.`;
+          const messageText = `DisciplineX Alert:\nDear ${student.name}, a new disciplinary remark ("${remark_text}") has been recorded. Please contact your department for details.\n\nప్రియమైన ${student.name}, మీ పై కొత్త క్రమశిక్షణా రిమార్క్ ("${remark_text}") నమోదు చేయబడింది. మరిన్ని వివరాల కోసం దయచేసి మీ విభాగాన్ని సంప్రదించండి.`;
           
           await fetch(smsGatewayUrl, {
             method: 'POST',
@@ -62,7 +62,7 @@ export const recordRemark = async (req, res) => {
               'Authorization': process.env.SMS_GATEWAY_KEY || ''
             },
             body: JSON.stringify({
-              number: student.phone,
+              phone: student.phone,
               message: messageText
             })
           });
